@@ -267,7 +267,7 @@ export const SimplexPage: React.FC = () => {
           style={{ scrollbarWidth: 'thin', scrollbarColor: `${accent}40 transparent` }}>
 
           {steps.length > 0 ? (
-            <StepByStepViewer steps={steps} accentColor={accent} />
+            <StepByStepViewer problem={{ type: optType, numVars, objectiveCoeffs: objective, constraints }} steps={steps} accentColor={accent} />
           ) : (
             /* Pantalla de bienvenida */
             <div className="h-full flex flex-col items-center justify-center text-center gap-6 p-8"

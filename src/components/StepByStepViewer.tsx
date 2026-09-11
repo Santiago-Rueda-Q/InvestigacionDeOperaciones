@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { SimplexStep } from '../types';
+import { SimplexProblem, SimplexStep } from '../types';
 import { LatexRenderer, TextWithMath } from './LatexRenderer';
 import { ChevronLeft, ChevronRight, SkipForward, SkipBack, FileText, Table2 } from 'lucide-react';
+import { SimplexGraph } from './SimplexGraph';
 
-interface Props { steps: SimplexStep[]; accentColor?: string; }
+interface Props { problem: SimplexProblem; steps: SimplexStep[]; accentColor?: string; }
 
 const PHASE_LABELS: Record<string, string> = {
   formulation:  'Enunciado',
@@ -19,7 +20,7 @@ const PHASE_ICONS: Record<string, React.ReactNode> = {
   tableau:       <Table2 size={14} />,
 };
 
-export const StepByStepViewer: React.FC<Props> = ({ steps, accentColor = '#6366f1' }) => {
+export const StepByStepViewer: React.FC<Props> = ({ problem, steps, accentColor = '#6366f1' }) => {
   const [idx, setIdx] = useState(0);
 
   if (!steps || steps.length === 0) return null;
@@ -130,6 +131,7 @@ export const StepByStepViewer: React.FC<Props> = ({ steps, accentColor = '#6366f
           className="rounded-2xl overflow-hidden"
           style={{ background: 'rgba(8,10,20,0.88)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
+          {/* ... table content remains below ... */}
           <div className="px-4 py-2.5 border-b border-white/8 flex items-center gap-2">
             <Table2 size={14} style={{ color: accentColor }} />
             <span className="text-xs font-bold text-white/60 uppercase tracking-widest">Tableau</span>
@@ -223,6 +225,11 @@ export const StepByStepViewer: React.FC<Props> = ({ steps, accentColor = '#6366f
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Gráfica 2D/3D (solo en paso óptimo) ── */}
+      {step.isOptimal && (
+        <SimplexGraph problem={problem} optimalStep={step} accentColor={accentColor} />
       )}
     </div>
   );
