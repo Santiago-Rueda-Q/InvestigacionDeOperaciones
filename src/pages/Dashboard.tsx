@@ -43,7 +43,7 @@ const units = [
     number: '02',
     icon: Network,
     topics: [
-      { label: 'El Problema del Transporte', path: '/unidad2/transporte', icon: Boxes,      ready: false },
+      { label: 'El Problema del Transporte', path: '/unidad2/transporte', icon: Boxes,      ready: true },
       { label: 'Problema de Asignación',     path: '/unidad2/asignacion', icon: GitBranch,  ready: false },
       { label: 'Flujo Máximo',               path: '/unidad2/flujo',      icon: TrendingUp, ready: false },
       { label: 'Flujo a Costo Mínimo',       path: '/unidad2/costo-min',  icon: Layers,     ready: false },

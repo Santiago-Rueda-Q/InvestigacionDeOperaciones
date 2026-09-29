@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Dashboard } from './pages/Dashboard';
 import { SimplexPage } from './pages/SimplexPage';
+import { TransportePage } from './pages/TransportePage';
 
 const ComingSoon = () => (
   <div
@@ -31,6 +32,7 @@ function App() {
       <Routes>
         <Route path="/"                   element={<Dashboard />} />
         <Route path="/unidad1/simplex"    element={<SimplexPage />} />
+        <Route path="/unidad2/transporte" element={<TransportePage />} />
         <Route path="*"                   element={<ComingSoon />} />
       </Routes>
     </BrowserRouter>

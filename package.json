@@ -27,6 +27,7 @@
     "framer-motion": "^13.2.0",
     "katex": "^0.18.7",
     "lucide-react": "^1.43.0",
+    "mathjs": "^15.2.0",
     "plotly.js": "^4.1.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
