@@ -23,7 +23,7 @@ const units = [
     number: '01',
     icon: Sigma,
     topics: [
-      { label: 'Formulación de Modelos',   path: '/unidad1/formulacion',     icon: BookOpen,   ready: true },
+      { label: 'Formulación de Modelos',   path: '/unidad1/formulacion',     icon: BookOpen,   ready: false },
       { label: 'Método Gráfico',            path: '/unidad1/grafico',          icon: BarChart2,  ready: false },
       { label: 'Método Simplex',            path: '/unidad1/simplex',          icon: Layers,     ready: true },
       { label: 'Dualidad',                  path: '/unidad1/dualidad',         icon: GitBranch,  ready: false },
@@ -169,37 +169,35 @@ const UnitCard: React.FC<UnitCardProps> = ({ unit, delay }) => {
           const TIcon = topic.icon;
           const inner = (
             <div
-              className={`topic-item group flex items-center gap-2.5 px-3 py-2 rounded-xl ${
-                topic.ready
-                  ? 'text-white/80 hover:text-white cursor-pointer'
-                  : 'text-white/30 cursor-not-allowed'
+              className={`topic-item group flex items-center gap-2.5 px-3 py-2 rounded-xl cursor-pointer ${
+                topic.ready ? 'text-white/80 hover:text-white' : 'text-white/45 hover:text-white/70'
               }`}
               style={{
-                background: topic.ready ? 'rgba(255,255,255,0.04)' : 'transparent',
-                border: topic.ready ? '1px solid rgba(255,255,255,0.07)' : '1px solid transparent',
+                background: topic.ready ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
+                border: topic.ready ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(255,255,255,0.04)',
                 transition: 'all 0.25s ease',
               }}
             >
               <div
-                className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                  topic.ready ? 'group-hover:scale-110 transition-transform' : 'opacity-40'
-                }`}
-                style={{ background: `${unit.accent}20` }}
+                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
+                style={{ background: `${unit.accent}20`, opacity: topic.ready ? 1 : 0.7 }}
               >
-                <TIcon size={13} color={topic.ready ? unit.accent : '#555'} strokeWidth={2} />
+                <TIcon size={13} color={topic.ready ? unit.accent : '#888'} strokeWidth={2} />
               </div>
               <span className="text-xs font-medium flex-1 leading-tight">{topic.label}</span>
               {topic.ready ? (
                 <ChevronRight size={13} className="opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-0.5" style={{ color: unit.accent }} />
               ) : (
-                <span className="text-[9px] bg-white/8 text-white/30 px-1.5 py-0.5 rounded-full font-semibold">Pronto</span>
+                <span className="text-[9px] bg-amber-400/10 text-amber-200/60 px-1.5 py-0.5 rounded-full font-semibold">Pronto</span>
               )}
             </div>
           );
 
-          return topic.ready
-            ? <Link to={topic.path} key={topic.path} className="block no-underline">{inner}</Link>
-            : <div key={topic.path}>{inner}</div>;
+          return (
+            <Link to={topic.path} key={topic.path} className="block no-underline">
+              {inner}
+            </Link>
+          );
         })}
       </div>
     </div>
