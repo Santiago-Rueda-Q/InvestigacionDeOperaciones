@@ -3,6 +3,10 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Dashboard } from './pages/Dashboard';
 import { SimplexPage } from './pages/SimplexPage';
 import { TransportePage } from './pages/TransportePage';
+import { AsignacionPage } from './pages/AsignacionPage';
+import { HungaroPage } from './pages/HungaroPage';
+import { FlujoMaximoPage } from './pages/FlujoMaximoPage';
+import { FlujoCostoMinPage } from './pages/FlujoCostoMinPage';
 
 const ComingSoon = () => (
   <div
@@ -31,9 +35,13 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/"                   element={<Dashboard />} />
-        <Route path="/unidad1/simplex"    element={<SimplexPage />} />
-        <Route path="/unidad2/transporte" element={<TransportePage />} />
-        <Route path="*"                   element={<ComingSoon />} />
+        <Route path="/unidad1/simplex"      element={<SimplexPage />} />
+        <Route path="/unidad2/transporte"   element={<TransportePage />} />
+        <Route path="/unidad2/asignacion"   element={<AsignacionPage />} />
+        <Route path="/unidad2/hungaro"      element={<HungaroPage />} />
+        <Route path="/unidad2/flujo"        element={<FlujoMaximoPage />} />
+        <Route path="/unidad2/costo-min"    element={<FlujoCostoMinPage />} />
+        <Route path="*"                     element={<ComingSoon />} />
       </Routes>
     </BrowserRouter>
   );

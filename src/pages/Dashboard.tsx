@@ -44,9 +44,10 @@ const units = [
     icon: Network,
     topics: [
       { label: 'El Problema del Transporte', path: '/unidad2/transporte', icon: Boxes,      ready: true },
-      { label: 'Problema de Asignación',     path: '/unidad2/asignacion', icon: GitBranch,  ready: false },
-      { label: 'Flujo Máximo',               path: '/unidad2/flujo',      icon: TrendingUp, ready: false },
-      { label: 'Flujo a Costo Mínimo',       path: '/unidad2/costo-min',  icon: Layers,     ready: false },
+      { label: 'Problema de Asignación',     path: '/unidad2/asignacion', icon: GitBranch,  ready: true },
+      { label: 'Método de Kuhn-Munkres',     path: '/unidad2/hungaro',    icon: Zap,        ready: true },
+      { label: 'Flujo Máximo',               path: '/unidad2/flujo',      icon: TrendingUp, ready: true },
+      { label: 'Flujo a Costo Mínimo',       path: '/unidad2/costo-min',  icon: Layers,     ready: true },
       { label: 'Árbol de Mínimo Recorrido',  path: '/unidad2/arbol',      icon: Network,    ready: false },
       { label: 'Redes PERT y CPM',           path: '/unidad2/pert-cpm',   icon: Sigma,      ready: false },
     ],
@@ -163,7 +164,7 @@ const UnitCard: React.FC<UnitCardProps> = ({ unit, delay }) => {
       <div className={`h-px bg-gradient-to-r ${unit.gradient} opacity-25 shrink-0`} />
 
       {/* Temas */}
-      <div className="flex-1 px-4 py-3 space-y-1.5 overflow-hidden">
+      <div className="flex-1 px-4 py-3 space-y-1.5 overflow-y-auto custom-scrollbar">
         {unit.topics.map((topic) => {
           const TIcon = topic.icon;
           const inner = (
