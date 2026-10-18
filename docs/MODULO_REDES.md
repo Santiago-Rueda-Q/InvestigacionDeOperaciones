@@ -29,6 +29,20 @@ npm run build
 | Kuhn–Munkres (húngaro) | `/unidad2/hungaro` |
 | Flujo máximo | `/unidad2/flujo` |
 | Flujo a costo mínimo | `/unidad2/costo-min` |
+| Redes PERT y CPM | `/unidad2/pert-cpm` |
+
+## Uso: ejemplo vs personalizado
+
+Cada calculadora admite:
+
+1. **Ejemplos editables** — cargar un preset y modificar celdas/red libremente.
+2. **Personalizado** — botón «Personalizado» / `blank*` para empezar desde una plantilla vacía.
+
+Al editar cualquier dato se invalida la solución previa (`touch`). El resultado y los pasos salen siempre del draft actual vía `solve*`.
+
+Componentes compartidos de UX: `CalculatorChrome` (`SolveButton`, `ClearButton`, `ValidationList`, `HintBanner`, `DimensionStepper`), `ModuleShell`, `CostMatrix`, `NetworkBoard`, `StepBar`.
+
+Skill reutilizable para agentes: `.cursor/skills/io-calculadoras/SKILL.md`.
 
 ## Arquitectura
 
@@ -36,7 +50,7 @@ npm run build
 - `src/core/FlujoMaximoSolver.ts` — Edmonds–Karp (Ford–Fulkerson + BFS), corte mínimo.
 - `src/core/FlujoCostoMinSolver.ts` — caminos aumentantes de costo mínimo + Bellman–Ford residual.
 - `src/components/asignacion/AssignmentWorkbench.tsx` — UI compartida de matrices.
-- `src/components/io/*` — shell, matriz editable, tablero SVG de red.
+- `src/components/io/*` — shell, matriz editable, tablero SVG de red, chrome de calculadora.
 - `src/pages/*` — páginas de cada tema.
 - `scripts/verify-modulos.ts` — comprobaciones ejecutadas con `npm test`.
 
@@ -62,6 +76,10 @@ Edmonds–Karp: mientras exista camino $s$–$t$ en la red residual (BFS), aumen
 Repetir: camino de menor costo en la red residual (Bellman–Ford) y aumentar hasta completar la demanda o agotar capacidad. Costo total $=\sum c_{ij}f_{ij}$. Si no se alcanza la demanda, se marca la solución como **incompleta**.
 
 **Limitación:** no se admiten ciclos de costo negativo con capacidad positiva en la red original.
+
+### PERT / CPM
+
+Red Activity-on-Node: paso adelante (ES, EF), paso atrás (LS, LF), holgura $H=LS-ES$. La ruta crítica son las actividades con $H=0$. En PERT, $t_e=(a+4m+b)/6$ y $\sigma_T^2$ suma las varianzas de la ruta crítica.
 
 ## Doce ejercicios de demostración
 

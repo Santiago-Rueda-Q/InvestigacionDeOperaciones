@@ -62,18 +62,56 @@ function asNum(v: unknown): number {
 export function validateMaxFlowInput(raw: MaxFlowInput): string[] {
   const issues: string[] = [];
   if (raw.nodes.length < 2) issues.push('La red necesita al menos dos nodos.');
-  if (raw.nodes.some(n => !n.trim())) issues.push('Cada nodo necesita un nombre.');
-  if (new Set(raw.nodes.map(n => n.trim())).size !== raw.nodes.length) issues.push('Hay nodos con el mismo nombre.');
-  if (!raw.nodes.includes(raw.source)) issues.push('El origen no está en la lista de nodos.');
-  if (!raw.nodes.includes(raw.sink)) issues.push('El destino no está en la lista de nodos.');
+  raw.nodes.forEach((n, i) => {
+    if (!n.trim()) issues.push(`El nodo ${i + 1} no tiene nombre.`);
+  });
+  if (new Set(raw.nodes.map(n => n.trim()).filter(Boolean)).size !== raw.nodes.filter(n => n.trim()).length) {
+    issues.push('Hay nodos con el mismo nombre.');
+  }
+  if (!raw.nodes.includes(raw.source)) issues.push(`El origen «${raw.source || '—'}» no está en la lista de nodos.`);
+  if (!raw.nodes.includes(raw.sink)) issues.push(`El destino «${raw.sink || '—'}» no está en la lista de nodos.`);
   if (raw.source === raw.sink) issues.push('El origen y el destino deben ser distintos.');
-  if (!raw.edges.length) issues.push('Hace falta al menos una arista.');
+  if (!raw.edges.length) issues.push('Agrega al menos una arista con capacidad.');
+  const seen = new Set<string>();
   raw.edges.forEach((e, i) => {
-    if (!raw.nodes.includes(e.from) || !raw.nodes.includes(e.to)) issues.push(`Arista ${i + 1}: extremos inválidos.`);
-    if (e.from === e.to) issues.push(`Arista ${i + 1}: no se admiten bucles.`);
-    if (!Number.isFinite(e.capacity) || e.capacity < 0) issues.push(`Arista ${i + 1}: capacidad inválida.`);
+    const label = `Arista ${i + 1} (${e.from || '?'} → ${e.to || '?'})`;
+    if (!raw.nodes.includes(e.from) || !raw.nodes.includes(e.to)) issues.push(`${label}: extremos inválidos.`);
+    if (e.from === e.to) issues.push(`${label}: no se admiten bucles.`);
+    if (!Number.isFinite(e.capacity)) issues.push(`${label}: la capacidad está vacía o no es numérica.`);
+    else if (e.capacity < 0) issues.push(`${label}: la capacidad no puede ser negativa.`);
+    const key = `${e.from.trim()}→${e.to.trim()}`;
+    if (e.from.trim() && e.to.trim()) {
+      if (seen.has(key)) issues.push(`Hay aristas paralelas ${key}. Fusiona capacidades o elimina el duplicado.`);
+      seen.add(key);
+    }
   });
   return [...new Set(issues)];
+}
+
+export function blankMaxFlow(): MaxFlowInput {
+  return {
+    nodes: ['s', 't'],
+    source: 's',
+    sink: 't',
+    edges: [{ id: 'e1', from: 's', to: 't', capacity: 0 }],
+  };
+}
+
+/** Conservación de flujo en nodos intermedios (entrada − salida ≈ 0). */
+export function checkFlowConservation(
+  nodes: string[],
+  edges: { from: string; to: string; flow: number }[],
+  source: string,
+  sink: string,
+): { node: string; net: number; ok: boolean }[] {
+  return nodes
+    .filter(n => n !== source && n !== sink)
+    .map(node => {
+      const inn = edges.filter(e => e.to === node).reduce((s, e) => s + e.flow, 0);
+      const out = edges.filter(e => e.from === node).reduce((s, e) => s + e.flow, 0);
+      const net = Math.round((inn - out) * 1e9) / 1e9;
+      return { node, net, ok: Math.abs(net) < 1e-6 };
+    });
 }
 
 interface ResidualArc {

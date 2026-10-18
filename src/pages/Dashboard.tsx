@@ -49,7 +49,7 @@ const units = [
       { label: 'Flujo Máximo',               path: '/unidad2/flujo',      icon: TrendingUp, ready: true },
       { label: 'Flujo a Costo Mínimo',       path: '/unidad2/costo-min',  icon: Layers,     ready: true },
       { label: 'Árbol de Mínimo Recorrido',  path: '/unidad2/arbol',      icon: Network,    ready: false },
-      { label: 'Redes PERT y CPM',           path: '/unidad2/pert-cpm',   icon: Sigma,      ready: false },
+      { label: 'Redes PERT y CPM',           path: '/unidad2/pert-cpm',   icon: Sigma,      ready: true },
     ],
   },
   {

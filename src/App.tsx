@@ -8,6 +8,7 @@ import { AsignacionPage } from './pages/AsignacionPage';
 import { HungaroPage } from './pages/HungaroPage';
 import { FlujoMaximoPage } from './pages/FlujoMaximoPage';
 import { FlujoCostoMinPage } from './pages/FlujoCostoMinPage';
+import { PertCpmPage } from './pages/PertCpmPage';
 import { ComingSoonPage } from './pages/status/ComingSoonPage';
 import { NotFoundPage } from './pages/status/NotFoundPage';
 import { PLANNED_ROUTES } from './pages/status/plannedRoutes';
@@ -24,6 +25,7 @@ function App() {
           <Route path="/unidad2/hungaro" element={<HungaroPage />} />
           <Route path="/unidad2/flujo" element={<FlujoMaximoPage />} />
           <Route path="/unidad2/costo-min" element={<FlujoCostoMinPage />} />
+          <Route path="/unidad2/pert-cpm" element={<PertCpmPage />} />
 
           {Object.keys(PLANNED_ROUTES).map(path => (
             <Route key={path} path={path} element={<ComingSoonPage />} />

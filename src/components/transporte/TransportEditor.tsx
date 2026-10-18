@@ -91,110 +91,122 @@ export const TransportEditor: React.FC<Props> = ({
 
   return (
     <>
-      <div className="rounded-2xl p-5" style={glassCard}>
-        <h2 className="text-base font-extrabold text-white mb-4">Configurar tabla</h2>
+      <div className="rounded-2xl p-4 @[28rem]/sidebar:p-5 min-w-0" style={glassCard}>
+        <h2 className="text-base font-extrabold text-white mb-3 @[28rem]/sidebar:mb-4">Configurar tabla</h2>
 
         <Label>Ejemplos</Label>
-        <div className="flex flex-col gap-1.5 mb-4">
+        <div className="grid grid-cols-1 @[26rem]/sidebar:grid-cols-2 gap-1.5 mb-4">
           {PRESETS.map(preset => (
             <button
               key={preset.id}
+              type="button"
               onClick={() => onPreset(preset.id)}
-              className="text-left px-3 py-2 rounded-xl transition-all"
+              className="text-left px-3 py-2 rounded-xl transition-all min-w-0"
               style={{
                 background: activePreset === preset.id ? `${ACCENT}22` : 'rgba(255,255,255,0.04)',
                 border: activePreset === preset.id ? `1px solid ${ACCENT}` : '1px solid rgba(255,255,255,0.07)',
               }}
             >
-              <div className="text-xs font-bold text-white">{preset.name}</div>
-              <div className="text-[11px] text-white/40 leading-snug">{preset.blurb}</div>
+              <div className="text-xs font-bold text-white truncate">{preset.name}</div>
+              <div className="text-[11px] text-white/40 leading-snug line-clamp-2">{preset.blurb}</div>
             </button>
           ))}
         </div>
 
-        <div className="flex justify-between items-center mb-2">
-          <Label>Orígenes</Label>
-          <button
-            onClick={addOrigin}
-            disabled={origins.length >= MAX_LINES}
-            className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg mb-2 disabled:opacity-30"
-            style={{ background: `${ACCENT}20`, color: ACCENT }}
-          >
-            <Plus size={12} /> Añadir
-          </button>
-        </div>
-        <div className="space-y-2 mb-4">
-          {origins.map((name, i) => (
-            <div key={i} className="flex items-center gap-1.5">
-              <input value={name} onChange={e => rename('origins', i, e.target.value)} className={inputClass} />
-              <input
-                type="number"
-                min={0}
-                value={shownNumber(supply[i])}
-                onChange={e => setSupply(i, readNumber(e.target.value))}
-                className={inputClass}
-                title="Oferta"
-              />
+        {/* Orígenes / destinos en dos columnas cuando el sidebar tiene espacio */}
+        <div className="grid grid-cols-1 @[30rem]/sidebar:grid-cols-2 gap-4 mb-4">
+          <div className="min-w-0">
+            <div className="flex justify-between items-center mb-2">
+              <Label>Orígenes</Label>
               <button
-                onClick={() => removeOrigin(i)}
-                disabled={origins.length <= 1}
-                className="text-red-400/50 hover:text-red-400 disabled:opacity-20"
+                type="button"
+                onClick={addOrigin}
+                disabled={origins.length >= MAX_LINES}
+                className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg mb-2 disabled:opacity-30"
+                style={{ background: `${ACCENT}20`, color: ACCENT }}
               >
-                <Trash2 size={13} />
+                <Plus size={12} /> Añadir
               </button>
             </div>
-          ))}
-        </div>
+            <div className="space-y-2">
+              {origins.map((name, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <input value={name} onChange={e => rename('origins', i, e.target.value)} className={inputClass} />
+                  <input
+                    type="number"
+                    min={0}
+                    value={shownNumber(supply[i])}
+                    onChange={e => setSupply(i, readNumber(e.target.value))}
+                    className={`${inputClass} max-w-[5.5rem]`}
+                    title="Oferta"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeOrigin(i)}
+                    disabled={origins.length <= 1}
+                    className="text-red-400/50 hover:text-red-400 disabled:opacity-20 shrink-0"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
-        <div className="flex justify-between items-center mb-2">
-          <Label>Destinos</Label>
-          <button
-            onClick={addDestination}
-            disabled={destinations.length >= MAX_LINES}
-            className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg mb-2 disabled:opacity-30"
-            style={{ background: `${ACCENT}20`, color: ACCENT }}
-          >
-            <Plus size={12} /> Añadir
-          </button>
-        </div>
-        <div className="space-y-2 mb-4">
-          {destinations.map((name, j) => (
-            <div key={j} className="flex items-center gap-1.5">
-              <input value={name} onChange={e => rename('destinations', j, e.target.value)} className={inputClass} />
-              <input
-                type="number"
-                min={0}
-                value={shownNumber(demand[j])}
-                onChange={e => setDemand(j, readNumber(e.target.value))}
-                className={inputClass}
-                title="Demanda"
-              />
+          <div className="min-w-0">
+            <div className="flex justify-between items-center mb-2">
+              <Label>Destinos</Label>
               <button
-                onClick={() => removeDestination(j)}
-                disabled={destinations.length <= 1}
-                className="text-red-400/50 hover:text-red-400 disabled:opacity-20"
+                type="button"
+                onClick={addDestination}
+                disabled={destinations.length >= MAX_LINES}
+                className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg mb-2 disabled:opacity-30"
+                style={{ background: `${ACCENT}20`, color: ACCENT }}
               >
-                <Trash2 size={13} />
+                <Plus size={12} /> Añadir
               </button>
             </div>
-          ))}
+            <div className="space-y-2">
+              {destinations.map((name, j) => (
+                <div key={j} className="flex items-center gap-1.5">
+                  <input value={name} onChange={e => rename('destinations', j, e.target.value)} className={inputClass} />
+                  <input
+                    type="number"
+                    min={0}
+                    value={shownNumber(demand[j])}
+                    onChange={e => setDemand(j, readNumber(e.target.value))}
+                    className={`${inputClass} max-w-[5.5rem]`}
+                    title="Demanda"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeDestination(j)}
+                    disabled={destinations.length <= 1}
+                    className="text-red-400/50 hover:text-red-400 disabled:opacity-20 shrink-0"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <Label>Costos unitarios</Label>
-        <div className="overflow-x-auto custom-scrollbar mb-4">
-          <table className="border-separate border-spacing-1">
+        <div className="overflow-x-auto custom-scrollbar mb-4 -mx-1 px-1">
+          <table className="border-separate border-spacing-1 w-max max-w-none">
             <thead>
               <tr>
                 <th />
                 {destinations.map((name, j) => (
-                  <th key={j} className="text-[10px] text-white/35 font-bold px-1">{name || `D${j + 1}`}</th>
+                  <th key={j} className="text-[10px] text-white/35 font-bold px-1 max-w-[4.5rem] truncate">{name || `D${j + 1}`}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {origins.map((name, i) => (
                 <tr key={i}>
-                  <th className="text-[10px] text-white/35 font-bold pr-1 text-left">{name || `O${i + 1}`}</th>
+                  <th className="text-[10px] text-white/35 font-bold pr-1 text-left max-w-[4.5rem] truncate">{name || `O${i + 1}`}</th>
                   {destinations.map((_, j) => (
                     <td key={j}>
                       <input

@@ -71,20 +71,49 @@ function format(n: number): string {
   return String(asNum(n));
 }
 
+/**
+ * Validación de entrada. Los costos negativos están permitidos:
+ * el húngaro minimiza cualquier matriz real; en maximización se usa M − c.
+ */
 export function validateAssignmentInput(raw: AssignmentInput): string[] {
   const issues: string[] = [];
   if (!raw.agents.length || !raw.tasks.length) issues.push('Hace falta al menos un agente y una tarea.');
   if (raw.agents.length > 12 || raw.tasks.length > 12) issues.push('Como máximo 12 agentes y 12 tareas.');
-  if (raw.agents.some(n => !n.trim())) issues.push('Cada agente necesita un nombre.');
-  if (raw.tasks.some(n => !n.trim())) issues.push('Cada tarea necesita un nombre.');
+  raw.agents.forEach((n, i) => {
+    if (!n.trim()) issues.push(`El agente de la fila ${i + 1} no tiene nombre.`);
+  });
+  raw.tasks.forEach((n, j) => {
+    if (!n.trim()) issues.push(`La tarea de la columna ${j + 1} no tiene nombre.`);
+  });
+  const agentNames = raw.agents.map(n => n.trim()).filter(Boolean);
+  if (new Set(agentNames).size !== agentNames.length) issues.push('Hay agentes con el mismo nombre.');
+  const taskNames = raw.tasks.map(n => n.trim()).filter(Boolean);
+  if (new Set(taskNames).size !== taskNames.length) issues.push('Hay tareas con el mismo nombre.');
   if (raw.costs.length !== raw.agents.length) issues.push('La matriz no coincide con el número de agentes.');
   raw.costs.forEach((row, i) => {
-    if (row.length !== raw.tasks.length) issues.push(`La fila ${i + 1} no tiene todas las columnas.`);
+    if (row.length !== raw.tasks.length) {
+      issues.push(`La fila ${raw.agents[i] || i + 1} no tiene ${raw.tasks.length} columnas.`);
+      return;
+    }
     row.forEach((c, j) => {
-      if (!Number.isFinite(c)) issues.push(`Costo inválido en (${i + 1}, ${j + 1}).`);
+      if (!Number.isFinite(c)) {
+        issues.push(`Celda vacía o no numérica: ${raw.agents[i] || `A${i + 1}`} → ${raw.tasks[j] || `T${j + 1}`}.`);
+      }
     });
   });
   return [...new Set(issues)];
+}
+
+/** Crea una matriz en blanco editable (modo personalizado). */
+export function blankAssignment(sense: AssignmentSense = 'min', m = 2, n = 2): AssignmentInput {
+  const mm = Math.max(1, Math.min(12, m));
+  const nn = Math.max(1, Math.min(12, n));
+  return {
+    sense,
+    agents: Array.from({ length: mm }, (_, i) => `A${i + 1}`),
+    tasks: Array.from({ length: nn }, (_, j) => `T${j + 1}`),
+    costs: Array.from({ length: mm }, () => Array.from({ length: nn }, () => 0)),
+  };
 }
 
 function tidy(raw: AssignmentInput): AssignmentInput {

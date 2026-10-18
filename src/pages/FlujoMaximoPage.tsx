@@ -1,12 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { Play, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { FilePlus2, Plus, Trash2 } from 'lucide-react';
 import { TextWithMath } from '../components/LatexRenderer';
-import { ModuleShell, glass, inputClass } from '../components/io/ModuleShell';
+import { ModuleShell, glass, inputClass, sidebarBasisForRows } from '../components/io/ModuleShell';
 import { NetworkBoard } from '../components/io/NetworkBoard';
+import { EdgeListEditor } from '../components/io/EdgeListEditor';
+import { DarkSelect } from '../components/io/DarkSelect';
+import { ClearButton, HintBanner, SolveButton, ValidationList } from '../components/io/CalculatorChrome';
 import { StepBar } from '../components/transporte/StepBar';
 import {
   FlowError,
   MAX_FLOW_PRESETS,
+  blankMaxFlow,
+  checkFlowConservation,
   type MaxFlowResult,
   solveMaxFlow,
   validateMaxFlowInput,
@@ -24,6 +29,7 @@ export const FlujoMaximoPage: React.FC = () => {
   const [result, setResult] = useState<MaxFlowResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [stepIdx, setStepIdx] = useState(0);
+  const [busy, setBusy] = useState(false);
 
   const draft = useMemo(() => ({ nodes, edges, source, sink }), [nodes, edges, source, sink]);
   const issues = useMemo(() => validateMaxFlowInput(draft), [draft]);
@@ -42,8 +48,20 @@ export const FlujoMaximoPage: React.FC = () => {
     clear();
   };
 
+  const startBlank = () => {
+    const b = blankMaxFlow();
+    setNodes([...b.nodes]);
+    setEdges(b.edges.map(e => ({ ...e })));
+    setSource(b.source);
+    setSink(b.sink);
+    setPresetId('');
+    clear();
+  };
+
   const solve = () => {
+    if (busy) return;
     if (issues.length) { setError(issues[0]); return; }
+    setBusy(true);
     try {
       setResult(solveMaxFlow(draft));
       setError(null);
@@ -51,6 +69,8 @@ export const FlujoMaximoPage: React.FC = () => {
     } catch (err) {
       setResult(null);
       setError(err instanceof FlowError || err instanceof Error ? err.message : 'No se pudo resolver.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -71,33 +91,52 @@ export const FlujoMaximoPage: React.FC = () => {
     <ModuleShell
       title="Flujo Máximo"
       accent={ACCENT}
+      sidebarBasisRem={sidebarBasisForRows(edges.length + nodes.length, 0.4, 20, 30)}
       sidebar={(
         <>
-          <div className="rounded-2xl p-5 space-y-3" style={glass}>
-            <h2 className="text-base font-extrabold text-white">Red</h2>
-            <div className="flex flex-col gap-1.5">
+          <div className="rounded-2xl p-4 @[28rem]/sidebar:p-5 space-y-3 min-w-0" style={glass}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-extrabold text-white">Red</h2>
+              <button type="button" onClick={startBlank}
+                className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg"
+                style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.65)' }}>
+                <FilePlus2 size={12} /> Personalizado
+              </button>
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Ejemplos (editables)</p>
+            <div className="grid grid-cols-1 @[26rem]/sidebar:grid-cols-2 gap-1.5">
               {MAX_FLOW_PRESETS.map(p => (
-                <button key={p.id} onClick={() => load(p.id)} className="text-left px-3 py-2 rounded-xl"
+                <button key={p.id} type="button" onClick={() => load(p.id)} className="text-left px-3 py-2 rounded-xl min-w-0"
                   style={{
                     background: presetId === p.id ? `${ACCENT}22` : 'rgba(255,255,255,0.04)',
                     border: presetId === p.id ? `1px solid ${ACCENT}` : '1px solid rgba(255,255,255,0.07)',
                   }}>
-                  <div className="text-xs font-bold text-white">{p.name}</div>
-                  <div className="text-[11px] text-white/40">{p.blurb}</div>
+                  <div className="text-xs font-bold text-white truncate">{p.name}</div>
+                  <div className="text-[11px] text-white/40 line-clamp-2">{p.blurb}</div>
                 </button>
               ))}
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <label className="text-[11px] text-white/40">Origen
-                <select value={source} onChange={e => { setSource(e.target.value); touch(); }} className={`${inputClass} mt-1`}>
-                  {nodes.map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
+              <label className="text-[11px] text-white/40 block">Origen
+                <DarkSelect
+                  className="mt-1"
+                  value={source}
+                  options={nodes}
+                  accent={ACCENT}
+                  aria-label="Nodo origen"
+                  onChange={v => { setSource(v); touch(); }}
+                />
               </label>
-              <label className="text-[11px] text-white/40">Destino
-                <select value={sink} onChange={e => { setSink(e.target.value); touch(); }} className={`${inputClass} mt-1`}>
-                  {nodes.map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
+              <label className="text-[11px] text-white/40 block">Destino
+                <DarkSelect
+                  className="mt-1"
+                  value={sink}
+                  options={nodes}
+                  accent={ACCENT}
+                  aria-label="Nodo destino"
+                  onChange={v => { setSink(v); touch(); }}
+                />
               </label>
             </div>
 
@@ -135,57 +174,35 @@ export const FlujoMaximoPage: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Aristas</span>
-                <button onClick={() => {
-                  const id = `e${Date.now()}`;
-                  setEdges(ed => [...ed, { id, from: nodes[0], to: nodes[nodes.length - 1], capacity: 1 }]);
-                  touch();
-                }} className="text-[10px] font-bold" style={{ color: ACCENT }}><Plus size={11} className="inline" /> arista</button>
-              </div>
-              <div className="space-y-1.5">
-                {edges.map((e, i) => (
-                  <div key={e.id} className="grid grid-cols-[1fr_1fr_56px_20px] gap-1 items-center">
-                    <select value={e.from} className={inputClass}
-                      onChange={ev => { setEdges(ed => ed.map((x, k) => k === i ? { ...x, from: ev.target.value } : x)); touch(); }}>
-                      {nodes.map(n => <option key={n} value={n}>{n}</option>)}
-                    </select>
-                    <select value={e.to} className={inputClass}
-                      onChange={ev => { setEdges(ed => ed.map((x, k) => k === i ? { ...x, to: ev.target.value } : x)); touch(); }}>
-                      {nodes.map(n => <option key={n} value={n}>{n}</option>)}
-                    </select>
-                    <input type="number" min={0} value={e.capacity} className={inputClass}
-                      onChange={ev => {
-                        const v = Number(ev.target.value);
-                        setEdges(ed => ed.map((x, k) => k === i ? { ...x, capacity: Number.isFinite(v) ? v : Number.NaN } : x));
-                        touch();
-                      }} />
-                    <button onClick={() => { setEdges(ed => ed.filter((_, k) => k !== i)); touch(); }} className="text-red-400/50"><Trash2 size={12} /></button>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <EdgeListEditor
+              nodes={nodes}
+              edges={edges}
+              accent={ACCENT}
+              onChange={next => { setEdges(next); touch(); }}
+              onAdd={() => {
+                setEdges(ed => [...ed, {
+                  id: `e${Date.now()}`,
+                  from: nodes[0],
+                  to: nodes[nodes.length - 1],
+                  capacity: 1,
+                }]);
+                touch();
+              }}
+            />
           </div>
-          <button onClick={solve} disabled={issues.length > 0}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black disabled:opacity-40"
-            style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, color: 'white' }}>
-            <Play size={16} /> Calcular flujo máximo
-          </button>
-          {result && (
-            <button onClick={clear} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold"
-              style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <RefreshCw size={13} /> Reiniciar
-            </button>
+          <SolveButton label="Calcular con esta red" disabled={issues.length > 0} busy={busy} accent={ACCENT} onClick={solve} />
+          {result && <ClearButton onClick={clear} />}
+          <ValidationList issues={issues} error={error} />
+          {!result && issues.length === 0 && (
+            <HintBanner accent={ACCENT}>Cambia nodos, aristas o capacidades: la solución anterior se borra hasta volver a calcular.</HintBanner>
           )}
-          {(error || issues[0]) && <p className="text-xs text-red-300">{error || issues[0]}</p>}
         </>
       )}
     >
       {!result ? (
         <div className="rounded-2xl p-6 space-y-3" style={glass}>
           <h2 className="text-xl font-extrabold text-white">Flujo máximo</h2>
-          <p className="text-sm text-white/50">Edmonds–Karp: Ford–Fulkerson con BFS. Se muestran caminos aumentantes, flujo por arista y el corte mínimo.</p>
+          <p className="text-sm text-white/50">Edmonds–Karp (Ford–Fulkerson + BFS). Construye tu red o carga un ejemplo editable.</p>
           <TextWithMath text={'$$v = \\max\\ \\text{flujo de } s \\text{ a } t$$'} />
           <NetworkBoard nodes={nodes} edges={boardEdges} source={source} sink={sink} />
         </div>
@@ -199,20 +216,38 @@ export const FlujoMaximoPage: React.FC = () => {
               Corte mínimo: {result.minCut.sourceSide.join(', ')} | {result.minCut.sinkSide.join(', ')}
               {' '}(capacidad {result.minCut.capacity})
             </p>
+            <div className="mt-3 text-[11px] text-white/45 space-y-0.5">
+              <p className="font-bold text-white/55 uppercase tracking-wider text-[10px]">Conservación (nodos intermedios)</p>
+              {checkFlowConservation(nodes, result.edges, source, sink).map(c => (
+                <p key={c.node}>{c.node}: entrada − salida = {c.net} {c.ok ? '✓' : '✗'}</p>
+              ))}
+              {checkFlowConservation(nodes, result.edges, source, sink).length === 0 && (
+                <p>No hay nodos intermedios que comprobar.</p>
+              )}
+            </div>
           </div>
 
-          {result.steps.length > 0 && (
-            <StepBar
-              count={result.steps.length}
-              index={stepIdx}
-              titles={result.steps.map(s => `Iter ${s.iteration}`)}
-              label={`Iteración ${step?.iteration ?? 1}`}
-              title={step ? step.path.join(' → ') : ''}
-              trailing={step ? `+${step.bottleneck} · total ${step.totalFlow}` : undefined}
-              accent={ACCENT}
-              onChange={setStepIdx}
-            />
-          )}
+          <div>
+            <p className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-2 px-1">
+              Procedimiento paso a paso (caminos aumentantes)
+            </p>
+            {result.steps.length > 0 ? (
+              <StepBar
+                count={result.steps.length}
+                index={stepIdx}
+                titles={result.steps.map(s => `Iter ${s.iteration}`)}
+                label={`Iteración ${step?.iteration ?? 1}`}
+                title={step ? step.path.join(' → ') : ''}
+                trailing={step ? `+${step.bottleneck} · total ${step.totalFlow}` : undefined}
+                accent={ACCENT}
+                onChange={setStepIdx}
+              />
+            ) : (
+              <div className="rounded-2xl p-4 text-sm text-white/50" style={glass}>
+                No hubo aumentos: no existe camino s→t con capacidad residual positiva.
+              </div>
+            )}
+          </div>
 
           <div className="rounded-2xl p-4" style={glass}>
             <NetworkBoard nodes={nodes} edges={boardEdges} source={source} sink={sink} />
@@ -232,6 +267,7 @@ export const FlujoMaximoPage: React.FC = () => {
                   <th className="text-left py-1">Arista</th>
                   <th>Capacidad</th>
                   <th>Flujo</th>
+                  <th>Residual</th>
                 </tr>
               </thead>
               <tbody>
@@ -240,6 +276,7 @@ export const FlujoMaximoPage: React.FC = () => {
                     <td className="py-1 font-semibold text-white">{e.from} → {e.to}</td>
                     <td className="text-center">{e.capacity}</td>
                     <td className="text-center" style={{ color: e.flow > 0 ? ACCENT : undefined }}>{e.flow}</td>
+                    <td className="text-center">{e.capacity - e.flow}</td>
                   </tr>
                 ))}
               </tbody>
