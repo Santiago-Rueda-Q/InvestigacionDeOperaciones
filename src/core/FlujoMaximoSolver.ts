@@ -274,14 +274,39 @@ export interface MaxFlowPreset {
   enunciado: string;
   data: MaxFlowInput;
   expectedFlow: number;
+  source?: string;
 }
+
+/** Capacidad «infinita» del PDF modelada con cota finita grande. */
+const INF_CAP = 1_000_000;
 
 export const MAX_FLOW_PRESETS: MaxFlowPreset[] = [
   {
+    id: 'pdf-4.1',
+    name: 'PDF 4.1 · Red 4 nodos',
+    blurb: 's–A–B–t; flujo máximo 17 (p.22–23).',
+    enunciado: 'Capacidades s→A:10, s→B:8, A→B:5, A→t:7, B→t:10.',
+    source: 'Numeros_2.pdf · Ejercicio 4.1 · p.22–23',
+    data: {
+      nodes: ['s', 'A', 'B', 't'],
+      source: 's',
+      sink: 't',
+      edges: [
+        { id: 'e1', from: 's', to: 'A', capacity: 10 },
+        { id: 'e2', from: 's', to: 'B', capacity: 8 },
+        { id: 'e3', from: 'A', to: 'B', capacity: 5 },
+        { id: 'e4', from: 'A', to: 't', capacity: 7 },
+        { id: 'e5', from: 'B', to: 't', capacity: 10 },
+      ],
+    },
+    expectedFlow: 17,
+  },
+  {
     id: 'mf-classic',
-    name: 'Red clásica (flujo 23)',
-    blurb: 'Ejemplo estándar de Edmonds–Karp.',
-    enunciado: 'Calcular el flujo máximo de s a t.',
+    name: 'PDF 4.2 · Flujo 23',
+    blurb: 'Edmonds–Karp; red de 6 nodos (p.23–24).',
+    enunciado: 'Calcular el flujo máximo de s a t (Figura 4.2 del PDF).',
+    source: 'Numeros_2.pdf · Ejercicio 4.2 · p.23–24',
     data: {
       nodes: ['s', 'a', 'b', 'c', 'd', 't'],
       source: 's',
@@ -300,6 +325,32 @@ export const MAX_FLOW_PRESETS: MaxFlowPreset[] = [
       ],
     },
     expectedFlow: 23,
+  },
+  {
+    id: 'pdf-4.3',
+    name: 'PDF 4.3 · Multi s/t',
+    blurb: 'Fábricas y clientes; superfuente/sumidero (p.24–25).',
+    enunciado: 'Máximo entregable F1,F2 → D1,D2 vía X,Y. Cap. ∞ ≈ 10^6 en s/t.',
+    source: 'Numeros_2.pdf · Ejercicio 4.3 · p.24–25',
+    data: {
+      nodes: ['s', 'F1', 'F2', 'X', 'Y', 'D1', 'D2', 't'],
+      source: 's',
+      sink: 't',
+      edges: [
+        { id: 'e1', from: 's', to: 'F1', capacity: INF_CAP },
+        { id: 'e2', from: 's', to: 'F2', capacity: INF_CAP },
+        { id: 'e3', from: 'F1', to: 'X', capacity: 10 },
+        { id: 'e4', from: 'F1', to: 'Y', capacity: 5 },
+        { id: 'e5', from: 'F2', to: 'Y', capacity: 8 },
+        { id: 'e6', from: 'X', to: 'D1', capacity: 7 },
+        { id: 'e7', from: 'X', to: 'Y', capacity: 3 },
+        { id: 'e8', from: 'Y', to: 'D1', capacity: 4 },
+        { id: 'e9', from: 'Y', to: 'D2', capacity: 9 },
+        { id: 'e10', from: 'D1', to: 't', capacity: INF_CAP },
+        { id: 'e11', from: 'D2', to: 't', capacity: INF_CAP },
+      ],
+    },
+    expectedFlow: 20,
   },
   {
     id: 'mf-diamond',

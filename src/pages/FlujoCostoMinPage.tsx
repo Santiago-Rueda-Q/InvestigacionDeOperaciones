@@ -114,6 +114,7 @@ export const FlujoCostoMinPage: React.FC = () => {
                   }}>
                   <div className="text-xs font-bold text-white truncate">{p.name}</div>
                   <div className="text-[11px] text-white/40 line-clamp-2">{p.blurb}</div>
+                  {p.source && <div className="text-[9px] text-white/25 mt-0.5 truncate">{p.source}</div>}
                 </button>
               ))}
             </div>

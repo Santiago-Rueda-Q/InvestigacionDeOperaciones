@@ -261,6 +261,44 @@ for (const p of MIN_COST_PRESETS) {
   check(validateMinCostInput(mc).length === 0, 'blank mincost validates');
 }
 
+// ── Regresión PDF Numeros_2.pdf (ejercicios resueltos verificados) ────────────
+{
+  const pdfAssign = [...ASSIGNMENT_PRESETS, ...HUNGARIAN_PRESETS].filter(p => p.id.startsWith('pdf-'));
+  for (const p of pdfAssign) {
+    const r = solveAssignment(p.data);
+    check(Math.abs(r.total - p.expectedTotal) < 1e-6, `PDF ${p.id} total=${r.total} expected=${p.expectedTotal}`);
+    check(r.steps.length > 0, `PDF ${p.id} has steps`);
+    if (p.data.agents.length === p.data.tasks.length && !p.data.costs.flat().some(c => c >= 9000)) {
+      const bf = bruteForceAssignment(p.data.costs, p.data.sense).total;
+      check(Math.abs(bf - r.total) < 1e-6, `PDF ${p.id} brute=${bf}`);
+    }
+    // Modificar un dato → nuevo resultado calculado
+    const tweaked = {
+      ...p.data,
+      costs: p.data.costs.map((row, i) => row.map((c, j) => (i === 0 && j === 0 && c < 9000 ? c + 50 : c))),
+    };
+    const rt = solveAssignment(tweaked);
+    check(Number.isFinite(rt.total), `PDF ${p.id} tweaked solves total=${rt.total}`);
+  }
+
+  const pdfFlow = MAX_FLOW_PRESETS.filter(p => p.id.startsWith('pdf-') || p.id === 'mf-classic');
+  for (const p of pdfFlow) {
+    const r = solveMaxFlow(p.data);
+    check(r.maxFlow === p.expectedFlow, `PDF ${p.id} flow=${r.maxFlow} expected=${p.expectedFlow}`);
+    const sum = r.steps.reduce((s, st) => s + st.bottleneck, 0);
+    check(Math.abs(sum - r.maxFlow) < 1e-6, `PDF ${p.id} steps sum=${sum}`);
+  }
+
+  const pdfMc = MIN_COST_PRESETS.filter(p => p.id.startsWith('pdf-'));
+  for (const p of pdfMc) {
+    const r = solveMinCostFlow(p.data);
+    check(r.sent === p.expectedSent && Math.abs(r.totalCost - p.expectedCost) < 1e-6,
+      `PDF ${p.id} sent=${r.sent} cost=${r.totalCost}`);
+    const identity = r.edges.reduce((s, e) => s + e.flow * e.cost, 0);
+    check(Math.abs(identity - r.totalCost) < 1e-6, `PDF ${p.id} cost identity`);
+  }
+}
+
 // ── PERT / CPM ───────────────────────────────────────────────────────────────
 for (const p of PERT_CPM_PRESETS) {
   const r = solvePertCpm(p.data);

@@ -297,9 +297,92 @@ export interface MinCostPreset {
   expectedSent: number;
   expectedCost: number;
   expectComplete: boolean;
+  source?: string;
 }
 
+/** Capacidad «sin límite» del PDF (arcos Si→Dj). */
+const BIG_CAP = 1000;
+
 export const MIN_COST_PRESETS: MinCostPreset[] = [
+  {
+    id: 'pdf-5.1',
+    name: 'PDF 5.1 · Transbordo',
+    blurb: 'Enviar 4 ud. de 1 a 4; costo 18 (p.28–29).',
+    enunciado: 'Arcos (c,u): 1→2 (2,4), 1→3 (4,2), 2→3 (1,2), 2→4 (3,3), 3→4 (1,5).',
+    source: 'Numeros_2.pdf · Ejercicio 5.1 · p.28–29',
+    data: {
+      nodes: ['1', '2', '3', '4'],
+      source: '1',
+      sink: '4',
+      demand: 4,
+      edges: [
+        { id: 'e1', from: '1', to: '2', capacity: 4, cost: 2 },
+        { id: 'e2', from: '1', to: '3', capacity: 2, cost: 4 },
+        { id: 'e3', from: '2', to: '3', capacity: 2, cost: 1 },
+        { id: 'e4', from: '2', to: '4', capacity: 3, cost: 3 },
+        { id: 'e5', from: '3', to: '4', capacity: 5, cost: 1 },
+      ],
+    },
+    expectedSent: 4,
+    expectedCost: 18,
+    expectComplete: true,
+  },
+  {
+    id: 'pdf-5.2',
+    name: 'PDF 5.2 · Transporte',
+    blurb: '2 plantas × 3 clientes; costo 465 (p.29–30).',
+    enunciado: 'Ofertas 20/30, demandas 10/25/15. Costos [[8,6,10],[9,12,13]].',
+    source: 'Numeros_2.pdf · Ejercicio 5.2 · p.29–30',
+    data: {
+      nodes: ['s', 'S1', 'S2', 'D1', 'D2', 'D3', 't'],
+      source: 's',
+      sink: 't',
+      demand: 50,
+      edges: [
+        { id: 'e1', from: 's', to: 'S1', capacity: 20, cost: 0 },
+        { id: 'e2', from: 's', to: 'S2', capacity: 30, cost: 0 },
+        { id: 'e3', from: 'S1', to: 'D1', capacity: BIG_CAP, cost: 8 },
+        { id: 'e4', from: 'S1', to: 'D2', capacity: BIG_CAP, cost: 6 },
+        { id: 'e5', from: 'S1', to: 'D3', capacity: BIG_CAP, cost: 10 },
+        { id: 'e6', from: 'S2', to: 'D1', capacity: BIG_CAP, cost: 9 },
+        { id: 'e7', from: 'S2', to: 'D2', capacity: BIG_CAP, cost: 12 },
+        { id: 'e8', from: 'S2', to: 'D3', capacity: BIG_CAP, cost: 13 },
+        { id: 'e9', from: 'D1', to: 't', capacity: 10, cost: 0 },
+        { id: 'e10', from: 'D2', to: 't', capacity: 25, cost: 0 },
+        { id: 'e11', from: 'D3', to: 't', capacity: 15, cost: 0 },
+      ],
+    },
+    expectedSent: 50,
+    expectedCost: 465,
+    expectComplete: true,
+  },
+  {
+    id: 'pdf-5.3',
+    name: 'PDF 5.3 · Oferta 7',
+    blurb: 'Nodo 1→t vía 4 y 5; costo 37 (p.30–32).',
+    enunciado: 'Oferta 7; demandas en 4 y 5 vía supersumidero t.',
+    source: 'Numeros_2.pdf · Ejercicio 5.3 · p.30–32',
+    data: {
+      nodes: ['1', '2', '3', '4', '5', 't'],
+      source: '1',
+      sink: 't',
+      demand: 7,
+      edges: [
+        { id: 'e1', from: '1', to: '2', capacity: 4, cost: 1 },
+        { id: 'e2', from: '1', to: '3', capacity: 5, cost: 3 },
+        { id: 'e3', from: '2', to: '3', capacity: 2, cost: 1 },
+        { id: 'e4', from: '2', to: '4', capacity: 3, cost: 4 },
+        { id: 'e5', from: '3', to: '4', capacity: 3, cost: 2 },
+        { id: 'e6', from: '3', to: '5', capacity: 4, cost: 3 },
+        { id: 'e7', from: '2', to: '5', capacity: 4, cost: 6 },
+        { id: 'e8', from: '4', to: 't', capacity: 3, cost: 0 },
+        { id: 'e9', from: '5', to: 't', capacity: 4, cost: 0 },
+      ],
+    },
+    expectedSent: 7,
+    expectedCost: 37,
+    expectComplete: true,
+  },
   {
     id: 'mc-simple',
     name: 'Dos caminos',
@@ -318,28 +401,8 @@ export const MIN_COST_PRESETS: MinCostPreset[] = [
         { id: 'e5', from: 'a', to: 'b', capacity: 2, cost: 1 },
       ],
     },
-    // Óptimo verificado: usar s→a→b→t y s→a→t; costo total 24.
     expectedSent: 5,
     expectedCost: 24,
-    expectComplete: true,
-  },
-  {
-    id: 'mc-short',
-    name: 'Camino único',
-    blurb: 'Una sola ruta s→m→t.',
-    enunciado: 'Enviar 3 unidades por el único camino.',
-    data: {
-      nodes: ['s', 'm', 't'],
-      source: 's',
-      sink: 't',
-      demand: 3,
-      edges: [
-        { id: 'e1', from: 's', to: 'm', capacity: 5, cost: 4 },
-        { id: 'e2', from: 'm', to: 't', capacity: 3, cost: 2 },
-      ],
-    },
-    expectedSent: 3,
-    expectedCost: 18, // 3*(4+2)
     expectComplete: true,
   },
   {

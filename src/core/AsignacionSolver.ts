@@ -53,6 +53,8 @@ export interface AssignmentPreset {
   enunciado: string;
   data: AssignmentInput;
   expectedTotal: number;
+  /** Referencia académica opcional (p. ej. PDF Numeros_2). */
+  source?: string;
 }
 
 const EPS = 1e-9;
@@ -385,6 +387,9 @@ export function bruteForceAssignment(costs: number[][], sense: AssignmentSense):
   return { total: best, perm: bestPerm };
 }
 
+/** Prohibición en Ej. 3.3 del PDF (M grande finita). */
+const FORBIDDEN = 9999;
+
 export const ASSIGNMENT_PRESETS: AssignmentPreset[] = [
   {
     id: 'a-3x3-min',
@@ -404,6 +409,60 @@ export const ASSIGNMENT_PRESETS: AssignmentPreset[] = [
     expectedTotal: 20,
   },
   {
+    id: 'pdf-3.1-max',
+    name: 'PDF 3.1 · Vendedores',
+    blurb: 'Maximizar utilidades (Numeros_2, p.15).',
+    enunciado: 'Tres vendedores y tres zonas. Utilidad esperada (millones). Maximizar.',
+    source: 'Numeros_2.pdf · Ejercicio 3.1 · p.15–16',
+    data: {
+      sense: 'max',
+      agents: ['V1', 'V2', 'V3'],
+      tasks: ['Z1', 'Z2', 'Z3'],
+      costs: [
+        [8, 5, 9],
+        [7, 10, 6],
+        [9, 7, 4],
+      ],
+    },
+    expectedTotal: 28,
+  },
+  {
+    id: 'pdf-3.2-rect',
+    name: 'PDF 3.2 · 3×4',
+    blurb: 'No balanceado: 3 agentes, 4 tareas (p.15–17).',
+    enunciado: 'Tres trabajadores y cuatro tareas; una tarea queda libre. Minimizar.',
+    source: 'Numeros_2.pdf · Ejercicio 3.2 · p.15–17',
+    data: {
+      sense: 'min',
+      agents: ['A1', 'A2', 'A3'],
+      tasks: ['T1', 'T2', 'T3', 'T4'],
+      costs: [
+        [9, 12, 15, 10],
+        [14, 10, 11, 9],
+        [12, 16, 13, 8],
+      ],
+    },
+    expectedTotal: 27,
+  },
+  {
+    id: 'pdf-3.3-prohib',
+    name: 'PDF 3.3 · Prohibidas',
+    blurb: 'Celdas prohibidas con M=9999 (p.17–18). Óptimo 26.',
+    enunciado: 'Operario 1 no usa máquina 1; operario 3 no usa máquina 3.',
+    source: 'Numeros_2.pdf · Ejercicio 3.3 · p.17–18',
+    data: {
+      sense: 'min',
+      agents: ['O1', 'O2', 'O3'],
+      tasks: ['M1', 'M2', 'M3'],
+      costs: [
+        [FORBIDDEN, 7, 9],
+        [8, 6, 10],
+        [11, 9, FORBIDDEN],
+      ],
+    },
+    expectedTotal: 26,
+  },
+  {
     id: 'a-3x3-max',
     name: '3×3 beneficios',
     blurb: 'Maximización con transformación M − c.',
@@ -420,25 +479,65 @@ export const ASSIGNMENT_PRESETS: AssignmentPreset[] = [
     },
     expectedTotal: 27,
   },
-  {
-    id: 'a-2x3-rect',
-    name: '2×3 rectangular',
-    blurb: 'Matriz rectangular: se agrega un agente ficticio.',
-    enunciado: 'Dos máquinas y tres trabajos. Balancear y minimizar.',
-    data: {
-      sense: 'min',
-      agents: ['M1', 'M2'],
-      tasks: ['J1', 'J2', 'J3'],
-      costs: [
-        [4, 1, 3],
-        [2, 0, 5],
-      ],
-    },
-    expectedTotal: 3,
-  },
 ];
 
 export const HUNGARIAN_PRESETS: AssignmentPreset[] = [
+  {
+    id: 'pdf-2.1',
+    name: 'PDF 2.1 · 3×3',
+    blurb: 'Sin ajuste de θ; costo 31 (p.8–9).',
+    enunciado: 'Minimizar con C = [[12,8,15],[10,9,12],[14,11,13]].',
+    source: 'Numeros_2.pdf · Ejercicio 2.1 · p.8–9',
+    data: {
+      sense: 'min',
+      agents: ['A1', 'A2', 'A3'],
+      tasks: ['T1', 'T2', 'T3'],
+      costs: [
+        [12, 8, 15],
+        [10, 9, 12],
+        [14, 11, 13],
+      ],
+    },
+    expectedTotal: 31,
+  },
+  {
+    id: 'pdf-2.2',
+    name: 'PDF 2.2 · 4×4',
+    blurb: 'Un ajuste θ=6; costo 140 (p.9–11).',
+    enunciado: 'Costos en miles; aplicar Kuhn–Munkres con un ajuste.',
+    source: 'Numeros_2.pdf · Ejercicio 2.2 · p.9–11',
+    data: {
+      sense: 'min',
+      agents: ['1', '2', '3', '4'],
+      tasks: ['1', '2', '3', '4'],
+      costs: [
+        [82, 83, 69, 92],
+        [77, 37, 49, 92],
+        [11, 69, 5, 86],
+        [8, 9, 98, 23],
+      ],
+    },
+    expectedTotal: 140,
+  },
+  {
+    id: 'pdf-2.3',
+    name: 'PDF 2.3 · Tiempos',
+    blurb: 'Operarios × tareas; 15 horas (p.11–12).',
+    enunciado: 'Cuatro operarios y cuatro tareas. Minimizar tiempo total.',
+    source: 'Numeros_2.pdf · Ejercicio 2.3 · p.11–12',
+    data: {
+      sense: 'min',
+      agents: ['Op1', 'Op2', 'Op3', 'Op4'],
+      tasks: ['T1', 'T2', 'T3', 'T4'],
+      costs: [
+        [14, 5, 8, 7],
+        [2, 12, 6, 5],
+        [7, 8, 3, 9],
+        [2, 4, 6, 10],
+      ],
+    },
+    expectedTotal: 15,
+  },
   {
     id: 'h-4x4',
     name: '4×4 húngaro',
@@ -473,22 +572,5 @@ export const HUNGARIAN_PRESETS: AssignmentPreset[] = [
       ],
     },
     expectedTotal: 24,
-  },
-  {
-    id: 'h-id',
-    name: 'Diagonal fácil',
-    blurb: 'Óptimo en la diagonal principal.',
-    enunciado: 'Minimizar; el óptimo es la diagonal.',
-    data: {
-      sense: 'min',
-      agents: ['X', 'Y', 'Z'],
-      tasks: ['U', 'V', 'W'],
-      costs: [
-        [1, 9, 9],
-        [9, 2, 9],
-        [9, 9, 3],
-      ],
-    },
-    expectedTotal: 6,
   },
 ];

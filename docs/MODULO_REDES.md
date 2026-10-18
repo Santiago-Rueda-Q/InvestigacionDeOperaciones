@@ -81,9 +81,9 @@ Repetir: camino de menor costo en la red residual (Bellman–Ford) y aumentar ha
 
 Red Activity-on-Node: paso adelante (ES, EF), paso atrás (LS, LF), holgura $H=LS-ES$. La ruta crítica son las actividades con $H=0$. En PERT, $t_e=(a+4m+b)/6$ y $\sigma_T^2$ suma las varianzas de la ruta crítica.
 
-## Doce ejercicios de demostración
+## Ejercicios de demostración
 
-Tres por tema, cargables desde la interfaz. Resultados verificados con `npm test` (fuerza bruta en asignaciones cuadradas pequeñas; identidades de flujo/corte/costo).
+Presets propios más ejercicios del PDF `Numeros_2.pdf` (ver `docs/VALIDACION_NUMEROS_2.md`). Resultados verificados con `npm test` (fuerza bruta en asignaciones cuadradas; identidades de flujo/corte/costo).
 
 ## Archivos principales creados o modificados
 
