@@ -29,6 +29,12 @@ import {
   solvePertCpm,
   validatePertCpmInput,
 } from '../src/core/PertCpmSolver';
+import {
+  MST_PRESETS,
+  blankMst,
+  solveMst,
+  validateMstInput,
+} from '../src/core/ArbolMinimoSolver';
 
 let failed = 0;
 const check = (ok: boolean, msg: string) => {
@@ -349,6 +355,31 @@ try {
   check(true, 'pert rejects cycle');
 }
 
+// ── Árbol de mínimo recorrido ────────────────────────────────────────────────
+for (const p of MST_PRESETS) {
+  const r = solveMst(p.data);
+  check(Math.abs(r.totalCost - p.expectedTotalCost) < 1e-6, `${p.id} cost=${r.totalCost} expected=${p.expectedTotalCost}`);
+  check(r.connected, `${p.id} connected`);
+  check(r.mstEdges.length === p.data.nodes.length - 1, `${p.id} |T|=n-1`);
+  check(r.steps.length > 0, `${p.id} has steps`);
+  const sameKruskalPrim =
+    Math.abs(
+      solveMst({ ...p.data, algorithm: 'kruskal' }).totalCost -
+        solveMst({ ...p.data, algorithm: 'prim', startNode: p.data.nodes[0] }).totalCost,
+    ) < 1e-6;
+  check(sameKruskalPrim, `${p.id} Kruskal≡Prim cost`);
+}
+{
+  const issues = validateMstInput(blankMst());
+  check(issues.length === 0, 'blank MST validates');
+  const bad = validateMstInput({
+    nodes: ['A', 'B'],
+    edges: [{ id: 'e', from: 'A', to: 'B', weight: -1 }],
+    algorithm: 'kruskal',
+  });
+  check(bad.some(m => /peso|weight|negativ/i.test(m)), 'MST rejects negative weight');
+}
+
 // ── Rechazos duros en solve ──────────────────────────────────────────────────
 try {
   solveAssignment({ sense: 'min', agents: ['A'], tasks: ['T'], costs: [[Number.NaN]] });
@@ -376,6 +407,199 @@ try {
 } catch {
   check(true, 'mincost rejects NaN cost');
 }
+
+// ── Unidad 1: nuevos solvers ─────────────────────────────────────────────────
+
+import { solveGrafico, validateGraficoInput, GRAFICO_PRESETS, blankGrafico } from '../src/core/GraficoSolver';
+import { solveDualidad, buildDual, DUALIDAD_PRESETS } from '../src/core/DualidadSolver';
+import { solveSensibilidad } from '../src/core/SensibilidadSolver';
+import { generateFeedback, FORMULACION_CASES } from '../src/core/FormulacionContent';
+
+// GraficoSolver
+{
+  const r = solveGrafico(GRAFICO_PRESETS[0]); // MAX 3x1+5x2, preset clásico
+  check(r.optimal !== null, 'grafico-preset0 has optimal');
+  check(Math.abs((r.optimal?.z ?? 0) - 36) < 0.01, 'grafico-preset0 Z*=36');
+  check(r.vertices.length >= 3, 'grafico-preset0 has ≥3 vertices');
+  check(r.steps.length >= 4, 'grafico-preset0 has 4 steps');
+  check(!r.infeasible, 'grafico-preset0 is feasible');
+
+  const r2 = solveGrafico(GRAFICO_PRESETS[1]); // MAX 2x1+3x2
+  check(r2.optimal !== null, 'grafico-preset1 has optimal');
+  check(r2.optimal!.z > 0, 'grafico-preset1 Z*>0');
+
+  // MIN preset
+  const r3 = solveGrafico(GRAFICO_PRESETS[2]); // MIN 2x1+3x2
+  check(r3.optimal !== null, 'grafico-preset2 has optimal (MIN)');
+
+  // blank validation
+  const errs = validateGraficoInput(blankGrafico());
+  check(errs.length === 0, 'blank grafico passes validation');
+
+  // infeasible (contradictory constraints)
+  const inf = solveGrafico({
+    type: 'MAX', c1: 1, c2: 1,
+    constraints: [
+      { id: '1', a1: 1, a2: 0, rel: '>=', rhs: 10 },
+      { id: '2', a1: 1, a2: 0, rel: '<=', rhs: 5 },
+    ],
+  });
+  check(inf.infeasible, 'grafico detects infeasibility');
+}
+
+// DualidadSolver
+{
+  const r = solveDualidad(DUALIDAD_PRESETS[0]); // MAX 5x1+4x2
+  check(r.feasible, 'dualidad-preset0 feasible');
+  check(r.primalSolution !== null, 'dualidad-preset0 primal solved');
+  check(r.dualSolution !== null, 'dualidad-preset0 dual solved');
+  check(r.dualityGap < 0.01, 'dualidad-preset0 strong duality holds');
+  check(r.shadowPrices.length === DUALIDAD_PRESETS[0].constraints.length, 'dualidad-preset0 shadow prices count');
+
+  // buildDual: MAX(≤) → MIN(≥)
+  const dual = buildDual(DUALIDAD_PRESETS[0]);
+  check(dual.type === 'MIN', 'buildDual MAX→MIN');
+  check(dual.numVars === DUALIDAD_PRESETS[0].constraints.length, 'buildDual numVars = m');
+  check(dual.constraints.length === DUALIDAD_PRESETS[0].numVars, 'buildDual m_dual = n_primal');
+
+  // MIN primal
+  const r3 = solveDualidad(DUALIDAD_PRESETS[2]); // MIN dieta
+  check(r3.feasible, 'dualidad-preset2 (MIN) feasible');
+  const dualMin = buildDual(DUALIDAD_PRESETS[2]);
+  check(dualMin.type === 'MAX', 'buildDual MIN→MAX');
+}
+
+// SensibilidadSolver
+{
+  const r = solveSensibilidad(DUALIDAD_PRESETS[0]);
+  check(r.feasible, 'sensibilidad-preset0 feasible');
+  check(r.optimal !== null, 'sensibilidad-preset0 has optimal');
+  check(r.objCoeffRanges.length === DUALIDAD_PRESETS[0].numVars, 'sensibilidad-preset0 FO ranges count');
+  check(r.rhsRanges.length === DUALIDAD_PRESETS[0].constraints.length, 'sensibilidad-preset0 RHS ranges count');
+  check(r.shadowPrices.length === DUALIDAD_PRESETS[0].constraints.length, 'sensibilidad-preset0 shadow prices count');
+  check(r.steps.length >= 5, 'sensibilidad-preset0 has ≥5 steps');
+
+  // FO ranges: lowerBound < currentValue < upperBound (or INF)
+  for (const rng of r.objCoeffRanges) {
+    const lb = rng.lowerBound < -1e13 ? -Infinity : rng.lowerBound;
+    const ub = rng.upperBound > 1e13 ? Infinity : rng.upperBound;
+    check(lb <= rng.currentValue + 1e-6 && rng.currentValue <= ub + 1e-6,
+      `sensibilidad FO c${rng.varIndex + 1} current in range`);
+  }
+
+  // Shadow prices ≥ 0 for MAX with ≤ constraints at optimality
+  check(r.shadowPrices.every(sp => sp >= -1e-6), 'sensibilidad MAX shadow prices ≥ 0');
+}
+
+// FormulacionContent
+{
+  check(FORMULACION_CASES.length === 3, 'formulacion has 3 cases');
+  for (const cas of FORMULACION_CASES) {
+    check(cas.selfEval.length >= 3, `formulacion ${cas.id} has ≥3 self-eval questions`);
+    check(cas.hints.length >= 3, `formulacion ${cas.id} has ≥3 hints`);
+    check(cas.learningObjectives.length >= 3, `formulacion ${cas.id} has ≥3 learning objectives`);
+    // check correctIndex is valid
+    for (const q of cas.selfEval) {
+      check(q.correctIndex >= 0 && q.correctIndex < q.options.length,
+        `formulacion ${cas.id} question ${q.id} correctIndex valid`);
+    }
+  }
+
+  // generateFeedback with correct answer
+  const cas = FORMULACION_CASES[0]; // produccion
+  const fb = generateFeedback('produccion', 'MAX', [30, 50], [
+    { coeffs: [2, 4], rel: '<=', rhs: 40 },
+    { coeffs: [1, 2], rel: '<=', rhs: 20 },
+  ]);
+  check(fb.correct, 'formulacion correct feedback returns true');
+
+  // generateFeedback with wrong answer
+  const fbWrong = generateFeedback('produccion', 'MIN', [30, 50], [
+    { coeffs: [2, 4], rel: '<=', rhs: 40 },
+    { coeffs: [1, 2], rel: '<=', rhs: 20 },
+  ]);
+  check(!fbWrong.correct, 'formulacion wrong feedback returns false');
+}
+
+// ── Unidad 3: Dinámica, Entera, No lineal, Colas ──────────────────────────────
+import {
+  DINAMICA_PRESETS,
+  blankDinamica,
+  solveDinamica,
+  validateDinamicaInput,
+} from '../src/core/DinamicaSolver';
+import {
+  ENTERA_PRESETS,
+  blankEntera,
+  solveEntera,
+  validateEnteraInput,
+} from '../src/core/EnteraSolver';
+import {
+  NOLINEAL_PRESETS,
+  blankNoLineal,
+  solveNoLineal,
+  validateNoLinealInput,
+  evalPoly,
+} from '../src/core/NoLinealSolver';
+import {
+  COLAS_PRESETS,
+  blankColas,
+  solveColas,
+  validateColasInput,
+} from '../src/core/ColasSolver';
+
+for (const p of DINAMICA_PRESETS) {
+  const r = solveDinamica(p.data);
+  check(r.feasible, `${p.id} feasible`);
+  check(Math.abs(r.optimalValue - p.expectedValue) < 1e-6, `${p.id} value=${r.optimalValue} expected=${p.expectedValue}`);
+  check(r.steps.length > 0, `${p.id} has steps`);
+  check(r.policy.length > 0, `${p.id} has policy`);
+}
+check(validateDinamicaInput(blankDinamica('ruta')).length === 0, 'blank ruta validates');
+check(validateDinamicaInput(blankDinamica('mochila')).length === 0, 'blank mochila validates');
+
+for (const p of ENTERA_PRESETS) {
+  const r = solveEntera(p.data);
+  check(r.feasible, `${p.id} feasible`);
+  check(r.x === p.expected.x && r.y === p.expected.y, `${p.id} point=(${r.x},${r.y}) expected=(${p.expected.x},${p.expected.y})`);
+  check(Math.abs(r.z - p.expected.z) < 1e-6, `${p.id} Z=${r.z} expected=${p.expected.z}`);
+  check(r.nodes.length > 0, `${p.id} has BB nodes`);
+}
+check(validateEnteraInput(blankEntera()).length === 0, 'blank entera validates');
+
+for (const p of NOLINEAL_PRESETS) {
+  const r = solveNoLineal(p.data);
+  check(Math.abs(r.optimal.x - p.expected.x) < 1e-4, `${p.id} x*=${r.optimal.x} expected=${p.expected.x}`);
+  check(Math.abs(r.optimal.f - p.expected.f) < 1e-4, `${p.id} f*=${r.optimal.f} expected=${p.expected.f}`);
+  check(Math.abs(evalPoly(p.data.coeffs, r.optimal.x) - r.optimal.f) < 1e-6, `${p.id} f identity`);
+  check(r.steps.length > 0, `${p.id} has steps`);
+}
+check(validateNoLinealInput(blankNoLineal()).length === 0, 'blank nolineal validates');
+
+for (const p of COLAS_PRESETS) {
+  const r = solveColas(p.data);
+  check(r.stable, `${p.id} stable`);
+  if (p.expected?.rho !== undefined) {
+    check(Math.abs(r.rho - p.expected.rho) < 1e-6, `${p.id} rho=${r.rho}`);
+  }
+  if (p.expected?.L !== undefined) {
+    check(Math.abs(r.L - p.expected.L) < 1e-6, `${p.id} L=${r.L}`);
+  }
+  if (p.expected?.Lq !== undefined) {
+    check(Math.abs(r.Lq - p.expected.Lq) < 1e-6, `${p.id} Lq=${r.Lq}`);
+  }
+  if (r.stable) {
+    check(Math.abs(r.L - p.data.lambda * r.W) < 1e-6, `${p.id} Little L=λW`);
+    check(Math.abs(r.Lq - p.data.lambda * r.Wq) < 1e-6, `${p.id} Little Lq=λWq`);
+  }
+  check(r.steps.length > 0, `${p.id} has steps`);
+}
+{
+  const unstable = solveColas({ model: 'MM1', lambda: 10, mu: 5, c: 1 });
+  check(!unstable.stable, 'MM1 unstable when λ≥μ');
+}
+check(validateColasInput(blankColas()).length === 0, 'blank colas validates');
+check(validateColasInput({ model: 'MM1', lambda: -1, mu: 5, c: 1 }).length > 0, 'colas rejects negative λ');
 
 if (failed) {
   console.error(`\n${failed} checks failed`);

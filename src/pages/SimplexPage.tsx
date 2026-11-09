@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Plus, Trash2, Play, RefreshCw, Sigma, Layers } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { SimplexProblem, Constraint, SimplexStep, OptimizationType } from '../types';
 import { SimplexSolver } from '../core/SimplexSolver';
 import { SimplexRevisadoSolver } from '../core/SimplexRevisadoSolver';
@@ -17,7 +18,21 @@ const sectionTitle = (t: string) => (
 type Method = 'simplex' | 'revisado';
 
 export const SimplexPage: React.FC = () => {
-  const [method, setMethod] = useState<Method>('simplex');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [method, setMethod] = useState<Method>(() =>
+    searchParams.get('method') === 'revisado' ? 'revisado' : 'simplex'
+  );
+
+  // Sincronizar el query param cuando cambia el método
+  useEffect(() => {
+    const current = searchParams.get('method');
+    if (method === 'revisado' && current !== 'revisado') {
+      setSearchParams({ method: 'revisado' }, { replace: true });
+    } else if (method === 'simplex' && current !== null) {
+      setSearchParams({}, { replace: true });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [method]);
   const [optType, setOptType] = useState<OptimizationType>('MAX');
   const [numVars, setNumVars] = useState(2);
   const [objective, setObjective] = useState<number[]>([3, 5]);
@@ -102,7 +117,7 @@ export const SimplexPage: React.FC = () => {
             <button
               key={m}
               type="button"
-              onClick={() => { setMethod(m); reset(); }}
+              onClick={() => { setMethod(m as Method); reset(); }}
               className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap"
               style={{
                 background: method === m ? (m === 'simplex' ? '#6366f1' : '#10b981') : 'transparent',
