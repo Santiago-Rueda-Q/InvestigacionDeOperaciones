@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { ModuleShell, glass, inputClass, sidebarBasisForRows } from '../components/io/ModuleShell';
 import { ClearButton, HintBanner, SolveButton, ValidationList } from '../components/io/CalculatorChrome';
+import { SegmentedControl } from '../components/io/SegmentedControl';
 import { TextWithMath } from '../components/LatexRenderer';
 import { StepBar } from '../components/transporte/StepBar';
 import {
@@ -77,15 +78,16 @@ export const DinamicaPage: React.FC = () => {
       sidebar={(
         <div className="rounded-2xl p-4 space-y-3" style={glass}>
           <h2 className="text-base font-extrabold text-white">Problema</h2>
-          <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            {(['ruta', 'mochila'] as DinamicaMode[]).map(m => (
-              <button key={m} type="button" onClick={() => switchMode(m)}
-                className="flex-1 py-2 rounded-lg text-xs font-bold"
-                style={{ background: mode === m ? ACCENT : 'transparent', color: mode === m ? 'white' : 'rgba(255,255,255,0.45)' }}>
-                {m === 'ruta' ? 'Ruta por etapas' : 'Mochila 0-1'}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label="Modo de programación dinámica"
+            accent={ACCENT}
+            value={mode}
+            options={[
+              { value: 'ruta', label: 'Ruta por etapas' },
+              { value: 'mochila', label: 'Mochila 0-1' },
+            ]}
+            onChange={switchMode}
+          />
 
           <div className="grid grid-cols-1 gap-1.5">
             {DINAMICA_PRESETS.filter(p => p.data.mode === mode).map(p => (
@@ -102,16 +104,17 @@ export const DinamicaPage: React.FC = () => {
 
           {ruta && (
             <>
-              <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                {(['min', 'max'] as const).map(s => (
-                  <button key={s} type="button"
-                    onClick={() => { setDraft({ ...ruta, sense: s }); touch(); }}
-                    className="flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase"
-                    style={{ background: ruta.sense === s ? ACCENT : 'transparent', color: ruta.sense === s ? 'white' : 'rgba(255,255,255,0.4)' }}>
-                    {s}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                aria-label="Criterio de ruta"
+                accent={ACCENT}
+                size="sm"
+                value={ruta.sense}
+                options={[
+                  { value: 'min', label: 'MIN' },
+                  { value: 'max', label: 'MAX' },
+                ]}
+                onChange={s => { setDraft({ ...ruta, sense: s }); touch(); }}
+              />
               <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Arcos</p>
               <div className="space-y-1.5 max-h-48 overflow-y-auto">
                 {ruta.arcs.map((a, i) => (

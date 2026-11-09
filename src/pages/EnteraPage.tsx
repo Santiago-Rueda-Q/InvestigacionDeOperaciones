@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { ModuleShell, glass, inputClass, sidebarBasisForColumns } from '../components/io/ModuleShell';
+import { ModuleShell, glass, inputClass, sidebarBasisForColumns, RELATION_OPTIONS } from '../components/io/ModuleShell';
 import { ClearButton, HintBanner, SolveButton, ValidationList } from '../components/io/CalculatorChrome';
+import { DarkSelect } from '../components/io/DarkSelect';
+import { SegmentedControl } from '../components/io/SegmentedControl';
 import { TextWithMath } from '../components/LatexRenderer';
 import { StepBar } from '../components/transporte/StepBar';
 import {
@@ -95,15 +97,16 @@ export const EnteraPage: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            {(['MAX', 'MIN'] as OptimizationType[]).map(t => (
-              <button key={t} type="button" onClick={() => { setType(t); touch(); }}
-                className="flex-1 py-2 rounded-lg text-xs font-bold"
-                style={{ background: type === t ? ACCENT : 'transparent', color: type === t ? 'white' : 'rgba(255,255,255,0.45)' }}>
-                {t}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label="Tipo de optimización"
+            accent={ACCENT}
+            value={type}
+            options={[
+              { value: 'MAX', label: 'MAX' },
+              { value: 'MIN', label: 'MIN' },
+            ]}
+            onChange={t => { setType(t); touch(); }}
+          />
 
           <div className="grid grid-cols-2 gap-2">
             <label className="text-[11px] text-white/40 block">c₁
@@ -119,7 +122,7 @@ export const EnteraPage: React.FC = () => {
           <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Restricciones</p>
           <div className="space-y-1.5">
             {constraints.map((c, i) => (
-              <div key={c.id} className="grid grid-cols-[1fr_1fr_3.2rem_1fr_1.5rem] gap-1 items-center">
+              <div key={c.id} className="grid grid-cols-[1fr_1fr_minmax(3.5rem,4.5rem)_1fr_1.5rem] gap-1 items-center">
                 <input className={inputClass} type="number" value={c.a1}
                   onChange={e => {
                     const next = [...constraints];
@@ -132,19 +135,17 @@ export const EnteraPage: React.FC = () => {
                     next[i] = { ...c, a2: Number(e.target.value) };
                     setConstraints(next); touch();
                   }} />
-                <select
-                  className="bg-transparent border border-white/15 rounded-lg text-white text-xs py-1.5"
+                <DarkSelect
                   value={c.rel}
-                  onChange={e => {
+                  options={[...RELATION_OPTIONS]}
+                  accent={ACCENT}
+                  aria-label="Relación"
+                  onChange={v => {
                     const next = [...constraints];
-                    next[i] = { ...c, rel: e.target.value as EnteraConstraint['rel'] };
+                    next[i] = { ...c, rel: v as EnteraConstraint['rel'] };
                     setConstraints(next); touch();
                   }}
-                >
-                  <option value="<=">≤</option>
-                  <option value=">=">≥</option>
-                  <option value="=">=</option>
-                </select>
+                />
                 <input className={inputClass} type="number" value={c.rhs}
                   onChange={e => {
                     const next = [...constraints];

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 import { ModuleShell, glass, inputClass, sidebarBasisForColumns } from '../components/io/ModuleShell';
 import { ClearButton, HintBanner, SolveButton, ValidationList } from '../components/io/CalculatorChrome';
+import { SegmentedControl } from '../components/io/SegmentedControl';
 import { TextWithMath, LatexRenderer } from '../components/LatexRenderer';
 import { StepBar } from '../components/transporte/StepBar';
 import {
@@ -117,15 +118,16 @@ export const NoLinealPage: React.FC = () => {
                 onChange={e => { setHi(Number(e.target.value)); touch(); }} />
             </label>
           </div>
-          <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            {(['min', 'max'] as const).map(s => (
-              <button key={s} type="button" onClick={() => { setSense(s); touch(); }}
-                className="flex-1 py-2 rounded-lg text-xs font-bold uppercase"
-                style={{ background: sense === s ? ACCENT : 'transparent', color: sense === s ? 'white' : 'rgba(255,255,255,0.45)' }}>
-                {s}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label="Criterio de optimización"
+            accent={ACCENT}
+            value={sense}
+            options={[
+              { value: 'min', label: 'MIN' },
+              { value: 'max', label: 'MAX' },
+            ]}
+            onChange={s => { setSense(s); touch(); }}
+          />
           <HintBanner accent={ACCENT}>
             Se localizan críticos con f′(x)=0, se clasifican con f″(x) y se comparan con los extremos del intervalo.
           </HintBanner>

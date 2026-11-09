@@ -13,6 +13,8 @@ interface Props {
   accent?: string;
   className?: string;
   disabled?: boolean;
+  /** Fuente monoespaciada (matrices / relaciones). Default true. */
+  mono?: boolean;
   'aria-label'?: string;
 }
 
@@ -25,9 +27,10 @@ export const DarkSelect: React.FC<Props> = ({
   value,
   options,
   onChange,
-  accent = '#10b981',
+  accent = '#818cf8',
   className = '',
   disabled,
+  mono = true,
   'aria-label': ariaLabel,
 }) => {
   const items = normalize(options);
@@ -35,6 +38,7 @@ export const DarkSelect: React.FC<Props> = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const listId = useId();
   const current = items.find(o => o.value === value) ?? items[0];
+  const font = mono ? 'font-mono' : 'font-sans';
 
   useEffect(() => {
     if (!open) return;
@@ -62,17 +66,19 @@ export const DarkSelect: React.FC<Props> = ({
         aria-controls={listId}
         aria-label={ariaLabel}
         onClick={() => !disabled && setOpen(v => !v)}
-        className="w-full flex items-center justify-between gap-1 rounded-lg px-2 py-1.5 text-sm font-mono text-white outline-none transition-colors disabled:opacity-40"
+        className={`io-select-trigger w-full min-h-9 flex items-center justify-between gap-1.5 rounded-lg px-2.5 py-2 text-sm ${font} text-white outline-none transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
         style={{
           background: 'rgba(255,255,255,0.04)',
           border: open ? `1px solid ${accent}` : '1px solid rgba(255,255,255,0.15)',
-          boxShadow: open ? `0 0 0 1px ${accent}33` : undefined,
+          boxShadow: open ? `0 0 0 2px ${accent}33` : undefined,
         }}
       >
-        <span className="truncate text-center flex-1">{current?.label ?? value ?? '—'}</span>
+        <span className="truncate text-center flex-1 leading-none">{current?.label ?? value ?? '—'}</span>
         <ChevronDown
           size={14}
-          className={`shrink-0 text-white/40 transition-transform ${open ? 'rotate-180' : ''}`}
+          strokeWidth={2}
+          className={`shrink-0 text-white/45 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          aria-hidden
         />
       </button>
 
@@ -80,9 +86,9 @@ export const DarkSelect: React.FC<Props> = ({
         <ul
           id={listId}
           role="listbox"
-          className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg py-1 shadow-xl"
+          className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg py-1 custom-scrollbar"
           style={{
-            background: '#0c1020',
+            background: 'var(--io-surface-elevated, #0c1020)',
             border: '1px solid rgba(255,255,255,0.12)',
             boxShadow: '0 12px 40px rgba(0,0,0,0.55)',
           }}
@@ -93,7 +99,7 @@ export const DarkSelect: React.FC<Props> = ({
               <li key={opt.value} role="option" aria-selected={selected}>
                 <button
                   type="button"
-                  className="w-full text-left px-3 py-2 text-sm font-mono transition-colors"
+                  className={`w-full text-left px-3 py-2 text-sm ${font} transition-colors leading-snug`}
                   style={{
                     background: selected ? `${accent}33` : 'transparent',
                     color: selected ? '#fff' : 'rgba(255,255,255,0.75)',

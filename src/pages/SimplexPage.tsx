@@ -6,14 +6,10 @@ import { SimplexSolver } from '../core/SimplexSolver';
 import { SimplexRevisadoSolver } from '../core/SimplexRevisadoSolver';
 import { StepByStepViewer } from '../components/StepByStepViewer';
 import { LatexRenderer } from '../components/LatexRenderer';
-import { ModuleShell, glass, sidebarBasisForColumns } from '../components/io/ModuleShell';
+import { ModuleShell, glass, inputClass, sidebarBasisForColumns, sectionLabelClass } from '../components/io/ModuleShell';
+import { SegmentedControl } from '../components/io/SegmentedControl';
 
-const inputClass =
-  'bg-transparent border border-white/15 rounded-lg text-white text-center text-sm font-mono py-1.5 outline-none focus:border-indigo-400 transition-colors w-full';
-
-const sectionTitle = (t: string) => (
-  <p className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-2">{t}</p>
-);
+const sectionTitle = (t: string) => <p className={sectionLabelClass}>{t}</p>;
 
 type Method = 'simplex' | 'revisado';
 
@@ -145,23 +141,18 @@ export const SimplexPage: React.FC = () => {
             </h2>
 
             {sectionTitle('Objetivo')}
-            <div className="flex gap-2 mb-4">
-              {(['MAX', 'MIN'] as OptimizationType[]).map(t => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setOptType(t)}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
-                  style={{
-                    background: optType === t ? accent : 'rgba(255,255,255,0.05)',
-                    color: optType === t ? 'white' : 'rgba(255,255,255,0.4)',
-                    border: optType === t ? `1px solid ${accent}` : '1px solid rgba(255,255,255,0.08)',
-                  }}
-                >
-                  {t === 'MAX' ? 'Maximizar' : 'Minimizar'}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              className="mb-4"
+              aria-label="Tipo de optimización"
+              accent={accent}
+              size="sm"
+              value={optType}
+              options={[
+                { value: 'MAX', label: 'Maximizar' },
+                { value: 'MIN', label: 'Minimizar' },
+              ]}
+              onChange={setOptType}
+            />
 
             {sectionTitle('Variables (n)')}
             <div className="flex items-center gap-2 mb-4">

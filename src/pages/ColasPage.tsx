@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ModuleShell, glass, inputClass, sidebarBasisForRows } from '../components/io/ModuleShell';
 import { ClearButton, HintBanner, SolveButton, ValidationList, DimensionStepper } from '../components/io/CalculatorChrome';
+import { SegmentedControl } from '../components/io/SegmentedControl';
 import { TextWithMath } from '../components/LatexRenderer';
 import { StepBar } from '../components/transporte/StepBar';
 import {
@@ -86,15 +87,16 @@ export const ColasPage: React.FC = () => {
               ))}
             </div>
 
-            <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-              {(['MM1', 'MMc'] as ColaModelo[]).map(m => (
-                <button key={m} type="button" onClick={() => { setModel(m); if (m === 'MM1') setC(1); touch(); }}
-                  className="flex-1 py-2 rounded-lg text-xs font-bold"
-                  style={{ background: model === m ? ACCENT : 'transparent', color: model === m ? 'white' : 'rgba(255,255,255,0.45)' }}>
-                  {m === 'MM1' ? 'M/M/1' : 'M/M/c'}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              aria-label="Modelo de colas"
+              accent={ACCENT}
+              value={model}
+              options={[
+                { value: 'MM1', label: 'M/M/1' },
+                { value: 'MMc', label: 'M/M/c' },
+              ]}
+              onChange={m => { setModel(m); if (m === 'MM1') setC(1); touch(); }}
+            />
 
             <label className="text-[11px] text-white/40 block">λ (llegadas / unidad tiempo)
               <input className={`${inputClass} mt-1`} type="number" step="any" value={lambda}

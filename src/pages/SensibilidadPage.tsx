@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Trash2, TrendingUp } from 'lucide-react';
+import { Plus, Trash2, TrendingUp, AlertTriangle } from 'lucide-react';
 import {
   SensibilidadResult,
   ObjCoeffRange,
@@ -8,7 +8,7 @@ import {
 } from '../core/SensibilidadSolver';
 import { DUALIDAD_PRESETS } from '../core/DualidadSolver';
 import { SimplexProblem, Constraint, OptimizationType } from '../types';
-import { ModuleShell, glass, inputClass, sidebarBasisForColumns } from '../components/io/ModuleShell';
+import { ModuleShell, glass, inputClass, sidebarBasisForColumns, sectionLabelClass, RELATION_OPTIONS } from '../components/io/ModuleShell';
 import {
   SolveButton,
   ClearButton,
@@ -16,13 +16,12 @@ import {
   HintBanner,
   DimensionStepper,
 } from '../components/io/CalculatorChrome';
+import { DarkSelect } from '../components/io/DarkSelect';
 import { TextWithMath } from '../components/LatexRenderer';
 import { LatexRenderer } from '../components/LatexRenderer';
 
 const ACCENT = '#6366f1';
-const sectionTitle = (t: string) => (
-  <p className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-2">{t}</p>
-);
+const sectionTitle = (t: string) => <p className={sectionLabelClass}>{t}</p>;
 
 function validateInput(p: SimplexProblem): string[] {
   const errs: string[] = [];
@@ -313,13 +312,14 @@ export const SensibilidadPage: React.FC = () => {
                     {i < problem.numVars - 1 && <span className="text-white/15 text-xs">+</span>}
                   </React.Fragment>
                 ))}
-                <select value={c.relation}
-                  onChange={e => updConstraint(c.id, 'relation', e.target.value)}
-                  className="bg-transparent border border-white/15 rounded-lg text-white text-xs py-1.5 px-1 outline-none focus:border-indigo-400">
-                  <option value="<=">≤</option>
-                  <option value=">=">≥</option>
-                  <option value="=">=</option>
-                </select>
+                <DarkSelect
+                  className="w-14 shrink-0"
+                  value={c.relation}
+                  options={[...RELATION_OPTIONS]}
+                  accent={ACCENT}
+                  aria-label="Relación"
+                  onChange={v => updConstraint(c.id, 'relation', v)}
+                />
                 <input type="number" value={c.rhs}
                   onChange={e => updConstraint(c.id, 'rhs', Number(e.target.value))}
                   className={inputClass} style={{ width: '48px' }} />
@@ -416,7 +416,12 @@ export const SensibilidadPage: React.FC = () => {
       )}
 
       {!result.feasible && (
-        <HintBanner accent="#f43f5e">⚠ No se obtuvo solución óptima. Verifica que el problema sea factible y acotado.</HintBanner>
+        <HintBanner accent="#f43f5e">
+          <span className="inline-flex items-center gap-1.5">
+            <AlertTriangle size={13} className="shrink-0" aria-hidden />
+            No se obtuvo solución óptima. Verifica que el problema sea factible y acotado.
+          </span>
+        </HintBanner>
       )}
     </div>
   ) : (

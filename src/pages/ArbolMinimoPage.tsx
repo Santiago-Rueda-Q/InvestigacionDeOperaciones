@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FilePlus2, Plus, Trash2 } from 'lucide-react';
+import { FilePlus2, Plus, Trash2, Check, AlertTriangle } from 'lucide-react';
 import { TextWithMath } from '../components/LatexRenderer';
 import { ModuleShell, glass, inputClass, sidebarBasisForRows } from '../components/io/ModuleShell';
 import { NetworkBoard } from '../components/io/NetworkBoard';
@@ -312,7 +312,10 @@ export const ArbolMinimoPage: React.FC = () => {
             </div>
             {!result.connected && (
               <p className="text-sm text-amber-200/80 mt-2">
-                ⚠ El grafo no es conexo: no existe un árbol recubridor completo.
+                <span className="inline-flex items-center gap-1.5">
+                  <AlertTriangle size={13} className="shrink-0" aria-hidden />
+                  El grafo no es conexo: no existe un árbol recubridor completo.
+                </span>
                 Se muestra el bosque de mínimo costo.
               </p>
             )}
@@ -323,9 +326,14 @@ export const ArbolMinimoPage: React.FC = () => {
               <span>{result.mstEdgeIds.length} de {edges.length}</span>
               <span className="font-bold text-white/60">Nodos cubiertos</span>
               <span>
-                {result.connected
-                  ? `${nodes.length} / ${nodes.length} ✓`
-                  : `${result.mstEdgeIds.length + 1} / ${nodes.length}`}
+                {result.connected ? (
+                  <span className="inline-flex items-center gap-1">
+                    {nodes.length} / {nodes.length}
+                    <Check size={12} style={{ color: ACCENT }} aria-label="completo" />
+                  </span>
+                ) : (
+                  `${result.mstEdgeIds.length + 1} / ${nodes.length}`
+                )}
               </span>
             </div>
             {result.connected && (
@@ -347,17 +355,17 @@ export const ArbolMinimoPage: React.FC = () => {
               <StepBar
                 count={result.steps.length}
                 index={stepIdx}
-                titles={result.steps.map((s, i) =>
+                titles={result.steps.map(s =>
                   s.decision === 'info'
                     ? 'Inicialización'
-                    : `${s.decision === 'added' ? '✓' : '✗'} ${s.edgeLabel}`,
+                    : `${s.decision === 'added' ? 'Incluida' : 'Rechazada'} ${s.edgeLabel}`,
                 )}
                 label={
                   step?.decision === 'info'
                     ? 'Inicio'
                     : step?.decision === 'added'
-                      ? `✓ Iter ${step.iteration}`
-                      : `✗ Iter ${step?.iteration ?? 1}`
+                      ? `Incluida · Iter ${step.iteration}`
+                      : `Rechazada · Iter ${step?.iteration ?? 1}`
                 }
                 title={
                   step?.decision === 'info'
@@ -447,7 +455,7 @@ export const ArbolMinimoPage: React.FC = () => {
                         <td className="text-center">{e.capacity}</td>
                         <td className="text-center">
                           {inTree
-                            ? <span style={{ color: ACCENT }} className="font-bold">✓</span>
+                            ? <Check size={14} className="inline" style={{ color: ACCENT }} aria-label="en MST" />
                             : <span className="text-white/25">—</span>}
                         </td>
                       </tr>

@@ -91,9 +91,9 @@ export const ModuleShell: React.FC<Props> = ({
 };
 
 export const glass: CSSProperties = {
-  background: 'rgba(8,10,20,0.88)',
-  border: '1px solid rgba(255,255,255,0.07)',
+  background: 'var(--io-surface, rgba(8,10,20,0.88))',
+  border: '1px solid var(--io-border, rgba(255,255,255,0.07))',
+  borderRadius: 'var(--io-radius-lg, 1rem)',
 };
 
-export const inputClass =
-  'bg-transparent border border-white/15 rounded-lg text-white text-center text-sm font-mono py-1.5 outline-none focus:border-emerald-400 transition-colors w-full';
+export { inputClass, sectionLabelClass, panelTitleClass, contentTitleClass, RELATION_OPTIONS, presetButtonStyle } from './formStyles';

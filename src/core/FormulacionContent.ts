@@ -36,11 +36,14 @@ export interface SelfEvalQuestion {
   explanation: string;
 }
 
+export type FormulacionIcon = 'factory' | 'utensils' | 'flask';
+
 export interface FormulacionCase {
   id: string;
   title: string;
   category: 'produccion' | 'dieta' | 'mezcla';
-  emoji: string;
+  /** Clave de icono Lucide (no emoji). */
+  icon: FormulacionIcon;
   context: string;
   learningObjectives: string[];
   solution: FCase_Solution;
@@ -58,7 +61,7 @@ export const FORMULACION_CASES: FormulacionCase[] = [
     id: 'produccion',
     title: 'Mezcla de Producción',
     category: 'produccion',
-    emoji: '🏭',
+    icon: 'factory',
     context:
       'Una fábrica produce dos tipos de muebles: **sillas** (tipo A) y **mesas** (tipo B). ' +
       'Cada silla requiere **2 h de carpintería** y **1 h de pintura**, con una ganancia de **$30**. ' +
@@ -133,7 +136,7 @@ export const FORMULACION_CASES: FormulacionCase[] = [
     id: 'dieta',
     title: 'Problema de Dieta',
     category: 'dieta',
-    emoji: '🥗',
+    icon: 'utensils',
     context:
       'Un nutricionista diseña una dieta mínimo-costo con dos alimentos: **Alimento A** y **Alimento B**. ' +
       'El Alimento A contiene **3 g de proteína y 1 g de grasa** por porción, con un costo de **$4**. ' +
@@ -208,7 +211,7 @@ export const FORMULACION_CASES: FormulacionCase[] = [
     id: 'mezcla',
     title: 'Mezcla de Materiales',
     category: 'mezcla',
-    emoji: '⚗️',
+    icon: 'flask',
     context:
       'Una empresa produce pintura mezclando dos compuestos químicos: **Compuesto P** y **Compuesto Q**. ' +
       'Se requiere que la mezcla final tenga **al menos 30% del ingrediente activo A** y ' +

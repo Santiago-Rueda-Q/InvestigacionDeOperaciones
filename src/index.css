@@ -1,22 +1,47 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+/* ── Design tokens (identidad visual IO) ───────────────────────── */
+:root {
+  --io-font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --io-font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+  --io-bg-0: #060810;
+  --io-bg-1: #0d1020;
+  --io-surface: rgba(8, 10, 20, 0.88);
+  --io-surface-elevated: #0c1020;
+  --io-border: rgba(255, 255, 255, 0.07);
+  --io-border-strong: rgba(255, 255, 255, 0.15);
+  --io-text: rgba(255, 255, 255, 0.92);
+  --io-text-muted: rgba(255, 255, 255, 0.45);
+  --io-accent: #818cf8;
+  --io-radius: 0.5rem;
+  --io-radius-lg: 1rem;
+  --io-control-h: 2.25rem;
+  --io-focus-ring: rgba(129, 140, 248, 0.28);
+}
 
 html {
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: rgba(99,102,241,0.4) transparent;
+  scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
   color-scheme: dark;
 }
 
-/* Fallback si queda algún <select> nativo */
+/* Fallback si queda algún <select> nativo (preferir DarkSelect) */
 select,
 option {
   color-scheme: dark;
-  background-color: #0c1020;
+  background-color: var(--io-surface-elevated);
   color: #f5f5f5;
+  font-family: var(--io-font-sans);
+  font-size: 0.875rem;
+  border-radius: var(--io-radius);
+  border: 1px solid var(--io-border-strong);
+  min-height: var(--io-control-h);
+  padding: 0.375rem 0.5rem;
 }
 
-/* Ocultar spinners nativos de <input type="number"> (flechas grises del navegador) */
+/* Ocultar spinners nativos de <input type="number"> */
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
@@ -28,12 +53,26 @@ input[type='number']::-webkit-outer-spin-button {
   margin: 0;
 }
 
+.io-input:focus,
+.io-select-trigger:focus-visible {
+  border-color: var(--io-accent) !important;
+  box-shadow: 0 0 0 2px var(--io-focus-ring);
+}
+
 body {
   margin: 0;
   overflow-x: hidden;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: var(--io-font-sans);
+  color: var(--io-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--io-font-sans);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 .custom-scrollbar::-webkit-scrollbar {

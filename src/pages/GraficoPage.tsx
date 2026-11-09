@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import Plot from 'react-plotly.js';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, DraftingCompass, AlertTriangle } from 'lucide-react';
 import {
   GraficoInput,
   GraficoConstraint,
@@ -11,20 +11,19 @@ import {
   solveGrafico,
 } from '../core/GraficoSolver';
 import { GeometrySolver } from '../core/GeometrySolver';
-import { ModuleShell, glass, inputClass, sidebarBasisForColumns } from '../components/io/ModuleShell';
+import { ModuleShell, glass, inputClass, sidebarBasisForColumns, sectionLabelClass, RELATION_OPTIONS } from '../components/io/ModuleShell';
 import {
   SolveButton,
   ClearButton,
   ValidationList,
   HintBanner,
 } from '../components/io/CalculatorChrome';
+import { DarkSelect } from '../components/io/DarkSelect';
 import { TextWithMath } from '../components/LatexRenderer';
 import { OptimizationType } from '../types';
 
 const ACCENT = '#6366f1';
-const sectionTitle = (t: string) => (
-  <p className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-2">{t}</p>
-);
+const sectionTitle = (t: string) => <p className={sectionLabelClass}>{t}</p>;
 
 // ── Gráfica ──────────────────────────────────────────────────────
 
@@ -104,7 +103,7 @@ const GraficoChart: React.FC<{ input: GraficoInput; result: GraficoResult }> = (
           data={data as Parameters<typeof Plot>[0]['data']}
           layout={{
             paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-            font: { color: 'rgba(255,255,255,0.6)', family: 'Inter, sans-serif', size: 10 },
+            font: { color: 'rgba(255,255,255,0.6)', family: 'Inter, ui-sans-serif, system-ui, sans-serif', size: 10 },
             margin: { l: 36, r: 16, t: 16, b: 36 },
             showlegend: true,
             legend: { font: { size: 9 }, bgcolor: 'rgba(0,0,0,0.5)', bordercolor: 'rgba(255,255,255,0.1)', borderwidth: 1 },
@@ -285,12 +284,14 @@ export const GraficoPage: React.FC = () => {
                 <span className="text-white/30 text-[10px]">x₁ +</span>
                 <input type="number" value={c.a2} onChange={e => updConstraint(c.id, 'a2', Number(e.target.value))} className={inputClass} style={{ width: '44px' }} />
                 <span className="text-white/30 text-[10px]">x₂</span>
-                <select value={c.rel} onChange={e => updConstraint(c.id, 'rel', e.target.value)}
-                  className="bg-transparent border border-white/15 rounded-lg text-white text-xs py-1.5 px-1 outline-none focus:border-indigo-400">
-                  <option value="<=">≤</option>
-                  <option value=">=">≥</option>
-                  <option value="=">=</option>
-                </select>
+                <DarkSelect
+                  className="w-14 shrink-0"
+                  value={c.rel}
+                  options={[...RELATION_OPTIONS]}
+                  accent={ACCENT}
+                  aria-label="Relación"
+                  onChange={v => updConstraint(c.id, 'rel', v)}
+                />
                 <input type="number" value={c.rhs} onChange={e => updConstraint(c.id, 'rhs', Number(e.target.value))} className={inputClass} style={{ width: '48px' }} />
                 <button type="button"
                   onClick={() => { if (input.constraints.length > 1) { setInput(p => ({ ...p, constraints: p.constraints.filter(cc => cc.id !== c.id) })); touch(); } }}
@@ -334,13 +335,18 @@ export const GraficoPage: React.FC = () => {
         </div>
       )}
       {result.infeasible && (
-        <HintBanner accent="#f43f5e">⚠ La región factible está vacía. Revisa que las restricciones sean compatibles.</HintBanner>
+        <HintBanner accent="#f43f5e">
+          <span className="inline-flex items-center gap-1.5">
+            <AlertTriangle size={13} className="shrink-0" />
+            La región factible está vacía. Revisa que las restricciones sean compatibles.
+          </span>
+        </HintBanner>
       )}
     </div>
   ) : (
     <div className="h-full min-h-[16rem] flex flex-col items-center justify-center text-center gap-6 p-8"
       style={{ background: 'rgba(8,10,20,0.5)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-      <div className="text-white/10 text-7xl font-black select-none">📐</div>
+      <DraftingCompass size={56} className="text-white/15" strokeWidth={1.25} aria-hidden />
       <div>
         <p className="text-white/50 font-bold text-lg mb-2">Método Gráfico — 2 Variables</p>
         <p className="text-white/25 text-sm">

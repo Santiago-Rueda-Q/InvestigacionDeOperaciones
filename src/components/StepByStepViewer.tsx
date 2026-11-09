@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SimplexProblem, SimplexStep } from '../types';
 import { LatexRenderer, TextWithMath } from './LatexRenderer';
-import { ChevronLeft, ChevronRight, SkipForward, SkipBack, FileText, Table2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, SkipForward, SkipBack, FileText, Table2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { SimplexGraph } from './SimplexGraph';
 
 interface Props { problem: SimplexProblem; steps: SimplexStep[]; accentColor?: string; }
@@ -109,17 +109,17 @@ export const StepByStepViewer: React.FC<Props> = ({ problem, steps, accentColor 
         }}
       >
         {step.isOptimal && (
-          <div className="mb-3 px-3 py-2 rounded-lg text-xs font-bold text-green-400"
+          <div className="mb-3 px-3 py-2 rounded-lg text-xs font-bold text-green-400 inline-flex items-center gap-1.5"
             style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)' }}
           >
-            ✓ Solución Óptima Alcanzada
+            <CheckCircle2 size={13} aria-hidden /> Solución Óptima Alcanzada
           </div>
         )}
         {step.isUnbounded && (
-          <div className="mb-3 px-3 py-2 rounded-lg text-xs font-bold text-red-400"
+          <div className="mb-3 px-3 py-2 rounded-lg text-xs font-bold text-red-400 inline-flex items-center gap-1.5"
             style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}
           >
-            ⚠ Problema No Acotado
+            <AlertTriangle size={13} aria-hidden /> Problema No Acotado
           </div>
         )}
         <TextWithMath text={step.explanationLatex} />

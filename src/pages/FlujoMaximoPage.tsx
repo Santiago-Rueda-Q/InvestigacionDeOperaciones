@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FilePlus2, Plus, Trash2 } from 'lucide-react';
+import { FilePlus2, Plus, Trash2, Check, X } from 'lucide-react';
 import { TextWithMath } from '../components/LatexRenderer';
 import { ModuleShell, glass, inputClass, sidebarBasisForRows } from '../components/io/ModuleShell';
 import { NetworkBoard } from '../components/io/NetworkBoard';
@@ -220,7 +220,12 @@ export const FlujoMaximoPage: React.FC = () => {
             <div className="mt-3 text-[11px] text-white/45 space-y-0.5">
               <p className="font-bold text-white/55 uppercase tracking-wider text-[10px]">Conservación (nodos intermedios)</p>
               {checkFlowConservation(nodes, result.edges, source, sink).map(c => (
-                <p key={c.node}>{c.node}: entrada − salida = {c.net} {c.ok ? '✓' : '✗'}</p>
+                <p key={c.node} className="inline-flex items-center gap-1.5">
+                  {c.node}: entrada − salida = {c.net}
+                  {c.ok
+                    ? <Check size={12} className="text-emerald-400" aria-label="ok" />
+                    : <X size={12} className="text-rose-400" aria-label="error" />}
+                </p>
               ))}
               {checkFlowConservation(nodes, result.edges, source, sink).length === 0 && (
                 <p>No hay nodos intermedios que comprobar.</p>

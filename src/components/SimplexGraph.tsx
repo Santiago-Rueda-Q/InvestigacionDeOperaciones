@@ -1,7 +1,10 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
+import { DraftingCompass, Box } from 'lucide-react';
 import { SimplexProblem, SimplexStep } from '../types';
 import { GeometrySolver } from '../core/GeometrySolver';
+
+const PLOT_FONT = { color: 'rgba(255,255,255,0.6)', family: 'Inter, ui-sans-serif, system-ui, sans-serif' };
 
 interface SimplexGraphProps {
   problem: SimplexProblem;
@@ -17,7 +20,7 @@ export const SimplexGraph: React.FC<SimplexGraphProps> = ({ problem, optimalStep
     return (
       <div className="mt-4 p-5 rounded-2xl border flex flex-col items-center justify-center text-center gap-2"
         style={{ background: 'rgba(8,10,20,0.88)', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <span className="text-white/30 text-4xl">📐</span>
+        <DraftingCompass size={36} className="text-white/30" strokeWidth={1.5} aria-hidden />
         <h4 className="text-white/80 font-bold">Gráfica no disponible</h4>
         <p className="text-white/40 text-xs">
           El método gráfico solo soporta problemas de 2 o 3 variables.<br/>
@@ -46,10 +49,10 @@ export const SimplexGraph: React.FC<SimplexGraphProps> = ({ problem, optimalStep
   const plotLayoutBase = {
     paper_bgcolor: 'transparent',
     plot_bgcolor: 'transparent',
-    font: { color: 'rgba(255,255,255,0.6)', family: 'Inter, sans-serif' },
+    font: PLOT_FONT,
     margin: { l: 40, r: 40, t: 40, b: 40 },
     showlegend: true,
-    legend: { font: { size: 10 }, bgcolor: 'rgba(0,0,0,0.5)', bordercolor: 'rgba(255,255,255,0.1)', borderwidth: 1 },
+    legend: { font: { size: 10, family: PLOT_FONT.family }, bgcolor: 'rgba(0,0,0,0.5)', bordercolor: 'rgba(255,255,255,0.1)', borderwidth: 1 },
   };
 
   if (is2D) {
@@ -125,7 +128,7 @@ export const SimplexGraph: React.FC<SimplexGraphProps> = ({ problem, optimalStep
     return (
       <div className="mt-4 p-4 rounded-2xl" style={{ background: 'rgba(8,10,20,0.88)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h4 className="text-white font-bold mb-2 flex items-center gap-2 text-sm">
-          <span style={{ color: accentColor }}>📐</span> Método Gráfico 2D
+          <DraftingCompass size={14} style={{ color: accentColor }} aria-hidden /> Método Gráfico 2D
         </h4>
         <div className="w-full h-80 rounded-xl overflow-hidden" style={{ background: 'rgba(0,0,0,0.3)' }}>
           <Plot
@@ -189,7 +192,7 @@ export const SimplexGraph: React.FC<SimplexGraphProps> = ({ problem, optimalStep
     return (
       <div className="mt-4 p-4 rounded-2xl" style={{ background: 'rgba(8,10,20,0.88)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h4 className="text-white font-bold mb-2 flex items-center gap-2 text-sm">
-          <span style={{ color: accentColor }}>🧊</span> Poliedro Factible 3D (Interactivo)
+          <Box size={14} style={{ color: accentColor }} aria-hidden /> Poliedro Factible 3D (Interactivo)
         </h4>
         <div className="w-full h-96 rounded-xl overflow-hidden" style={{ background: 'rgba(0,0,0,0.3)' }}>
           <Plot

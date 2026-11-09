@@ -1,22 +1,27 @@
-import React, { useState } from 'react';
-import { CheckCircle, XCircle, HelpCircle, ChevronRight, BookOpen, Lightbulb } from 'lucide-react';
+import React, { useState, type ReactNode } from 'react';
+import { CheckCircle, XCircle, HelpCircle, ChevronRight, BookOpen, Lightbulb, Factory, UtensilsCrossed, FlaskConical } from 'lucide-react';
 import {
   FORMULACION_CASES,
   FormulacionCase,
+  FormulacionIcon,
   generateFeedback,
   SelfEvalQuestion,
   FCase_Constraint,
 } from '../core/FormulacionContent';
-import { ModuleShell, glass } from '../components/io/ModuleShell';
+import { ModuleShell, glass, sectionLabelClass } from '../components/io/ModuleShell';
 import { TextWithMath } from '../components/LatexRenderer';
 import { LatexRenderer } from '../components/LatexRenderer';
 import { HintBanner, ValidationList } from '../components/io/CalculatorChrome';
 
 const ACCENT = '#6366f1';
 
-const sectionTitle = (t: string) => (
-  <p className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-2">{t}</p>
-);
+const sectionTitle = (t: string) => <p className={sectionLabelClass}>{t}</p>;
+
+const CASE_ICONS: Record<FormulacionIcon, ReactNode> = {
+  factory: <Factory size={20} strokeWidth={1.75} />,
+  utensils: <UtensilsCrossed size={20} strokeWidth={1.75} />,
+  flask: <FlaskConical size={20} strokeWidth={1.75} />,
+};
 
 // ── Autoevaluación ────────────────────────────────────────────────
 
@@ -81,7 +86,10 @@ const SelfEvalPanel: React.FC<{ questions: SelfEvalQuestion[] }> = ({ questions 
               </div>
               {isRevealed && (
                 <div className="mt-2 px-3 py-2 rounded-lg text-xs" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}>
-                  <span style={{ color: ACCENT }}>💡 </span><span className="text-white/60">{q.explanation}</span>
+                  <span className="inline-flex items-start gap-1.5 text-white/60">
+                    <Lightbulb size={12} className="shrink-0 mt-0.5" style={{ color: ACCENT }} aria-hidden />
+                    {q.explanation}
+                  </span>
                 </div>
               )}
             </div>
@@ -104,7 +112,9 @@ const ModelPanel: React.FC<{ cas: FormulacionCase }> = ({ cas }) => {
       {/* Contexto */}
       <div className="rounded-2xl p-5" style={{ background: 'rgba(8,10,20,0.88)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-2xl">{cas.emoji}</span>
+          <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${ACCENT}22`, color: ACCENT }}>
+            {CASE_ICONS[cas.icon]}
+          </span>
           <div>
             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>{cas.category}</p>
             <h3 className="text-base font-extrabold text-white">{cas.title}</h3>
@@ -237,7 +247,7 @@ export const FormulacionPage: React.FC = () => {
                 color: caseIdx === i ? ACCENT : 'rgba(255,255,255,0.5)',
               }}
             >
-              <span className="text-base">{c.emoji}</span>
+              <span className="shrink-0 opacity-90">{CASE_ICONS[c.icon]}</span>
               <div>
                 <div>{c.title}</div>
                 <div className="text-[10px] font-normal capitalize text-white/30">{c.category}</div>

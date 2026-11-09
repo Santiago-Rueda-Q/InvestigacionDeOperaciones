@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Trash2, ArrowRightLeft } from 'lucide-react';
+import { Plus, Trash2, ArrowRightLeft, CheckCircle2, AlertTriangle } from 'lucide-react';
 import {
   DualidadResult,
   DUALIDAD_PRESETS,
@@ -7,7 +7,7 @@ import {
   solveDualidad,
 } from '../core/DualidadSolver';
 import { SimplexProblem, Constraint, OptimizationType } from '../types';
-import { ModuleShell, glass, inputClass, sidebarBasisForColumns } from '../components/io/ModuleShell';
+import { ModuleShell, glass, inputClass, sidebarBasisForColumns, sectionLabelClass, RELATION_OPTIONS } from '../components/io/ModuleShell';
 import {
   SolveButton,
   ClearButton,
@@ -15,13 +15,12 @@ import {
   HintBanner,
   DimensionStepper,
 } from '../components/io/CalculatorChrome';
+import { DarkSelect } from '../components/io/DarkSelect';
 import { TextWithMath } from '../components/LatexRenderer';
 import { LatexRenderer } from '../components/LatexRenderer';
 
 const ACCENT = '#6366f1';
-const sectionTitle = (t: string) => (
-  <p className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-2">{t}</p>
-);
+const sectionTitle = (t: string) => <p className={sectionLabelClass}>{t}</p>;
 
 function validateDualInput(p: SimplexProblem): string[] {
   const errs: string[] = [];
@@ -129,7 +128,9 @@ const DualityStrengthCard: React.FC<{ result: DualidadResult }> = ({ result }) =
         border: `1px solid ${verified ? 'rgba(16,185,129,0.3)' : 'rgba(251,191,36,0.3)'}`,
       }}
     >
-      <span className="text-3xl">{verified ? '✅' : '⚠'}</span>
+      {verified
+        ? <CheckCircle2 size={28} className="text-emerald-400 shrink-0" aria-hidden />
+        : <AlertTriangle size={28} className="text-amber-400 shrink-0" aria-hidden />}
       <div>
         <p className="text-sm font-bold" style={{ color: verified ? '#10b981' : '#fbbf24' }}>
           Dualidad Fuerte {verified ? 'Verificada' : 'con Brecha'}
@@ -320,13 +321,14 @@ export const DualidadPage: React.FC = () => {
                     {i < problem.numVars - 1 && <span className="text-white/15 text-xs">+</span>}
                   </React.Fragment>
                 ))}
-                <select value={c.relation}
-                  onChange={e => updConstraint(c.id, 'relation', e.target.value)}
-                  className="bg-transparent border border-white/15 rounded-lg text-white text-xs py-1.5 px-1 outline-none focus:border-indigo-400">
-                  <option value="<=">≤</option>
-                  <option value=">=">≥</option>
-                  <option value="=">=</option>
-                </select>
+                <DarkSelect
+                  className="w-14 shrink-0"
+                  value={c.relation}
+                  options={[...RELATION_OPTIONS]}
+                  accent={ACCENT}
+                  aria-label="Relación"
+                  onChange={v => updConstraint(c.id, 'relation', v)}
+                />
                 <input type="number" value={c.rhs}
                   onChange={e => updConstraint(c.id, 'rhs', Number(e.target.value))}
                   className={inputClass} style={{ width: '48px' }} />
@@ -417,14 +419,17 @@ export const DualidadPage: React.FC = () => {
 
       {!result.feasible && (
         <HintBanner accent="#f43f5e">
-          ⚠ No se pudo obtener solución óptima del primal. Verifica que el problema sea factible y acotado.
+          <span className="inline-flex items-center gap-1.5">
+            <AlertTriangle size={13} className="shrink-0" aria-hidden />
+            No se pudo obtener solución óptima del primal. Verifica que el problema sea factible y acotado.
+          </span>
         </HintBanner>
       )}
     </div>
   ) : (
     <div className="h-full min-h-[16rem] flex flex-col items-center justify-center text-center gap-6 p-8"
       style={{ background: 'rgba(8,10,20,0.5)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-      <div className="text-white/10 text-7xl font-black select-none">↔</div>
+      <ArrowRightLeft size={56} className="text-white/15" strokeWidth={1.25} aria-hidden />
       <div>
         <p className="text-white/50 font-bold text-lg mb-2">Dualidad en Programación Lineal</p>
         <p className="text-white/25 text-sm">

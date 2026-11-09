@@ -63,15 +63,15 @@ export const SolveButton: React.FC<{
   busy?: boolean;
   accent?: string;
   onClick: () => void;
-}> = ({ label, disabled, busy, accent = '#10b981', onClick }) => (
+}> = ({ label, disabled, busy, accent = '#818cf8', onClick }) => (
   <button
     type="button"
     onClick={onClick}
     disabled={disabled || busy}
-    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black disabled:opacity-40"
-    style={{ background: `linear-gradient(135deg, ${accent}, ${accent}cc)`, color: 'white' }}
+    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold disabled:opacity-40 transition-opacity"
+    style={{ background: `linear-gradient(135deg, ${accent}, ${accent}cc)`, color: 'white', minHeight: '2.75rem' }}
   >
-    {busy ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+    {busy ? <Loader2 size={16} className="animate-spin" aria-hidden /> : <Play size={16} aria-hidden />}
     {busy ? 'Calculando…' : label}
   </button>
 );
@@ -80,10 +80,15 @@ export const ClearButton: React.FC<{ onClick: () => void; label?: string }> = ({
   <button
     type="button"
     onClick={onClick}
-    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold"
-    style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}
+    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-colors"
+    style={{
+      background: 'rgba(255,255,255,0.05)',
+      color: 'rgba(255,255,255,0.45)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      minHeight: '2.5rem',
+    }}
   >
-    <RefreshCw size={13} /> {label}
+    <RefreshCw size={13} aria-hidden /> {label}
   </button>
 );
 
